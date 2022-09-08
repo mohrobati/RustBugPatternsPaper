@@ -1,0 +1,497 @@
+\documentclass{article}
+\usepackage{listings, listings-rust}
+\lstset{escapeinside={<@}{@>}}
+\usepackage{minted}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[utf8]{inputenc}
+\usepackage{multirow}
+
+\title{Rust Bug Fix Patterns}
+\author{Moh Robati}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Producing bugs has been an unavoidable part of computer programming which happens unintentionally. Researchers have been trying to help software engineers to be more aware of the bug producing practices in development and how to step towards creating bug-free software. One useful step towards that goal would be studying common bug patterns (and their corresponding fixes) that occur across multiple software systems. Research efforts for categorizing common bug patterns date back to 1975 where Edres tried to categorize various bug patterns which occurred in operating system program. 
+
+In this work, we empirically analyze the most popular Rust projects in GitHub, and discover the common bug patterns lied within them. We believe these insights are important for various reasons, primarily for developing program repair tools. Automated program repair tools try to locate bug
+locations in the source code (they include a fault localization module) and then fix them, possibly without human intervention, in a manner such that the modified program meets the desired specifications. A powerful automated program repair system has many useful applications and can significantly simplify the process of debugging, resulting in a reduction in software development cost. The set of common bug fix patterns can be a useful input to an APR system as it directly provides information about fixing similar buggy structures, and that can significantly reduce the search space for patch generation. 
+
+Similarly, if we are not observing the desired behaviour from our program, that would indicate that there lies a fault within our program. Fault localization is the process of automatically finding the faulty statement(s) in our program. If a fault localization tool knows about the common bug patterns that can appear in the underlying programming language, it can prioritize the code segment candidates based on their potentials of producing bugs. That would result in a more robust tool as it leverages from historical data.
+
+Moreover, knowing which code patterns in a programming language are more susceptible to produce bugs can help programmers to be more cautious while working with similar code structures. This knowledge can make the developers avoid certain mistakes during production which ultimately would result in reducing the frequent bug patterns within the program. As Monperrus describes, the less frequent bug patterns we keep in our software, the less cost we would have to pay for software maintenance.
+
+To discuss about a less talked about use case, recently, researchers have been trying to apply deep learning techniques on programs to learn about the semantics of the code or training models which can modify programs towards a specific goal (e.g. bug fix). One challenge is that usually learning tools get fixed size vectors as input and map that to an output. Unlike image data, it is challenging to compress programs into a vector without any loss in semantic information. Current approaches try to define the vector dimensions in a way that accounts for all possible abstract syntax tree forms. That results in a large sparse space for the inputs. Assuming that the deep learning model we are trying to develop is associated with bug fixing tasks, then knowledge about common bug fix patterns can help with pruning input space towards containing less dimensions. That can help with creating more efficient models.
+
+There have been many studies on detecting and categorizing bug fix patterns in general, or for a specific programming language. We are more interested in the latter, since
+our study is focused on pervasive bug fix patterns in Rust. \\
+Yang et al. proposed a mining approach to detect Python bug fix patterns via studying
+fine-grained fixing code changes. In their research, they also examined what portion of the bugs
+could be fixed using automated bug fixing approaches. Moreover, they evaluated the fix patterns in
+the wild and realized that 37\% of the buggy codes could be matched by the fix patterns they had
+found. \\
+Hanam et al. conducted a similar research but for finding Javascript most pervasive bug fix
+patterns. They presented a large-scale study of the most common bug fix patterns by mining 105K
+commits from 134 server-side JavaScript projects. They used DBSCAN clustering algorithm
+and divided bug fixing change types into 219 clusters, from which they extracted 13 pervasive
+cross-project bug fix patterns. \\
+In this work, we study common bug patterns that appear in Rust projects. Rust is a relatively new language that allows programmers to write programs that have low-level
+control over resources, as well as high-level safety guarantees. Originally, Rust was a side
+project developed by Graydon Hoare, a Mozilla employee. The company started to fund this project
+in 2009, since they intended to use Rust in some of the low-level Firefox components.
+What distinguishes Rust from the other systems programming languages, e.g. C/C++, is the
+ownership framework that has been incorporated inside the language. The ownership framework keeps the track of the references to different memory locations, and will free them once they
+go out of scope. If the program passes the compiler checks, it automatically guarantees several
+safety problems e.g. dangling references, or double-free problem, that had to be taken care of
+manually in languages like C/C++. Moreover, not only the ownership concept removes the
+need for a garbage collector in the runtime environment, it does not require the programmer to
+explicitly do certain safety tasks, like freeing references.
+Due to the memory and thread safety guarantees that Rust provides, many software companies
+adopted Rust in production. For example, Dropbox decided to migrate to Rust for developing their
+storage system, since they were not completely satisfied with the features provided by AWS’s S3 or
+Golang.
+
+The main module which governs over the ownership rules is called Borrow Checker. Because of its importance in Rust, we have decided to put discovered patterns into two groups; (1) non-borrow-checker related patterns (General Patterns), and (2) borrow-checker related patterns (BC-Related Patterns). This distinction was really helpful as it made our tool discover clearer results.
+
+We present our discovered insights of our empirical study in the following four research
+questions (RQs):
+
+\textbf{RQ1. How successful is our data modelling approach in capturing all the necessary data?} 
+
+\textbf{RQ2. What are the most common AST structures in the bug fixing changes?} 
+
+\textbf{RQ3. What are the general fix patterns in Rust?} 
+
+\textbf{RQ4. Which fix patterns are related to Borrow Checker in Rust?}
+
+
+\section{Pervasive Bug Patterns}
+\subsection{Attributes}
+
+Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
+
+\subsubsection{G1. Modifying the attributes of structs}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G1.1: Adding attributes to a struct
+++ #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+
+// G1.2: Removing attributes from a struct
+-- #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+
+// G1.3: Changing an existing attribute of a struct
+-- #[derive(Debug)]
+++ #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways; (G1.1) Adding attributes to the struct, (G1.2) Removing attributes from the struct, (G1.3) Changing the content of an existing attribute. The attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern.
+
+\subsubsection{G2. Modifying the attributes of struct fields}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G2.1: Adding attributes to struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    ++ #[serde(skip_serializing_if = "is_empty")]
+    pub attributes: Option<Attributes>,
+}
+
+// G2.2: Removing attributes from struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    -- #[serde(skip_serializing_if = "Option::is_none")]
+    pub attributes: Option<Attributes>,
+}
+
+// G2.3: Changing attributes of struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    -- #[serde(skip_serializing_if = "Option::is_none")]
+    ++ #[serde(skip_serializing_if = "is_empty")]
+    pub attributes: Option<Attributes>,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. Similar to G1, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+
+\subsection{Struct}
+\subsubsection{G3. Adding/Removing a Struct field}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G3.1: Adding a new field to a struct
+struct InnerListeners {
+    pending: Mutex<Vec<Pending>>,
+    <@\textcolor{red}{--}@> queue_object_name: Uuid,
+}
+
+// G3.2: Removing a field from a struct
+struct SnapshotService<U, R> {
+    uuid_resolver_handle: R,
+    <@\textcolor{green}{++}@> db_name: String,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} A set of new fields are add to or removed from an existing struct. The addition of a new field happens when the developer need to store a new piece of data so they can implement a desired behaviour. The removal of a field  happens when the developer realizes that the field is expendable with respect to the behaviour they want to implement.
+
+\subsubsection{G4. Modifying the access modifiers of struct fields}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+// G4.1: Adding pub to a field
+pub struct HtmlBlock {
+    -- content: BlockContent,
+    ++ pub content: BlockContent,
+    brace: token::Brace,
+} 
+
+// G4.2: Removing pub from a field
+pub struct Languages {
+--  pub named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+++  named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+    extensions: HashMap<String, Arc<LanguageDefinition>>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Adding pub to a struct field makes it possible to access that field within external modules. In the instances of this cluster, adding pub access modifier happened in a bug fixing change, where the developer needed to access a field which had not been granted public access. On the other hand, the public access might be revoked if the developer realizes there is no external access to the field.
+
+\subsubsection{G5. Different fields order when initializing Struct}
+
+
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- return Poll::Ready(ReadyEvent { ready, tick });
+++ return Poll::Ready(ReadyEvent { tick, ready });
+\end{lstlisting}
+
+\subsection{Option}
+\subsubsection{G6. Changing field type T to T$\langle$Option$\rangle$}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[ast_node("MediaRule")]
+pub struct MediaRule {
+    pub span: Span,
+    -- pub media: MediaQueryList,
+    ++ pub media: Option<MediaQueryList>,
+    pub rules: Vec<Rule>,
+}
+
+\end{lstlisting}
+
+\subsection{Types}
+\subsubsection{G7. Changing a struct field type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+pub struct Manifest {
+  -- pub features: Vec<String>,
+  ++ pub features: HashSet<String>,
+}
+
+\end{lstlisting}
+
+\subsubsection{G8. Changing a generic type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Anchor {
+    -- point: Point<usize>,
+    ++ point: Point<isize>,
+    side: Side,
+}
+
+\end{lstlisting}
+
+\subsubsection{G9. Change in enum variant value type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResolvedDependency {
+  Resolved(ModuleSpecifier),
+  -- Err(String),
+  ++ Err(ResolvedDependencyErr),
+}
+
+\end{lstlisting}
+
+\subsubsection{G10. Changing the type inside a tuple}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[allow(dead_code)]
+pub struct CoreState {
+    // Other fields
+    -- pending_views: Vec<ViewId>,
+    ++ pending_views: Vec<(ViewId, Table)>,
+    peer: Client
+}
+
+\end{lstlisting}
+
+\subsection{Traits}
+\subsubsection{G11. TraitBound Change}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+-- pub struct EventLoop<T: tty::EventedReadWrite> {
+++ pub struct EventLoop<T: tty::EventedPty> {
+    poll: mio::Poll,
+    // Other fields
+}
+
+\end{lstlisting}
+
+\subsubsection{G12. Implementing a different trait for a struct}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+-- impl ToDebug for ShellError {
+++ impl FormatDebug for ShellError {
+        // Implementing functions ...
+   }
+
+\end{lstlisting}
+
+\subsection{Ref and Deref}
+\subsubsection{B1. Adding $\&$}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+let repo = replace(&mut *contents, Processing).inner_repo();
+-- let statuses = repo_to_statuses(repo, &self.workdir);
+++ let statuses = repo_to_statuses(&repo, &self.workdir);
+\end{lstlisting}
+
+
+\subsubsection{B2. Removing $\&$}
+
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+enums.iter().for_each(|e| {
+    let mut enum_template = EnumTemplate::new();
+    -- enum_template.set_message_enum(&e);
+    ++ enum_template.set_message_enum(e);
+    // Other statements
+});
+\end{lstlisting}
+
+
+\subsubsection{B3. Dropping & from func decl and adding * to match statement}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- fn to_color_choice(&self) -> ColorChoice {
+--     match *self {
+++ fn to_color_choice(self) -> ColorChoice {
+++     match self {
+           // Statements
+       }
+\end{lstlisting}
+
+\subsubsection{B4. Adding *}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+for p in wixobjs {
+--  args.push(p.to_string());
+++  args.push((*p).to_string());
+}
+
+let displayed_attributes = schema.clone().map(|s| {
+    s.displayed_name()
+        .iter()
+--      .map(|s| (*s).to_string())
+++      .map(|s| s.to_string())
+        .collect::<HashSet<String>>()
+});
+\end{lstlisting}
+
+\subsection{Mut}
+\subsubsection{B5. Adding mut}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+parser::Parser::new(args)
+        .parse_module()
+--      .map_err(|e| {
+++      .map_err(|mut e| {
+            e.emit();
+            ()
+        })?
+
+\end{lstlisting}
+
+\subsubsection{B6. Removing mut}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- let mut tx = tx.clone();
+++ let tx = tx.clone();
+\end{lstlisting}
+
+
+\subsection{Vector}
+\subsubsection{B7. Vector reference to slice}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub fn expand_delimited_square(
+--  children: &Vec<TokenNode>,
+++  children: &[TokenNode],
+) -> Result<hir::Expression, ParseError> {
+    // body
+}
+\end{lstlisting}
+
+\subsection{Lifetime}
+\subsubsection{B8. Adding generic Lifetime}
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+#[allow(dead_code)]
+-- fn api_error(webview: &mut Webview, error_fn: String, message: &str) {
+++ fn api_error(webview: &mut Webview<'_>, error_fn: String, message: &str) {
+  let reject_code = tauri_api::rpc::format_callback(error_fn, message);
+  webview.eval(&reject_code)
+}
+
+\end{lstlisting}
+
+\subsubsection{B9. Dropping static lifetime}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+-- const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
+++ const QUEUE_SIZES: &[u16] = &[QUEUE_SIZE];
+
+\end{lstlisting}
+
+\subsubsection{B10. Dropping Lifetime in field definition}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub struct Table<'a> {
+    columns: Vec<Column>,
+    colours: &'a Colours,
+    env: &'a Environment,
+    widths: TableWidths,
+    -- time_format: &'a TimeFormat,
+    ++ time_format: TimeFormat,
+    size_format: SizeFormat,
+    git: Option<&'a GitCache>,
+}
+\end{lstlisting}
+
+\subsection{Clone}
+\subsubsection{B11. Dropping clone and adding dereference}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub fn reset(&mut self, template: &Cell) {
+    // memcpy template to self
+--  *self = template.clone();
+++  *self = *template;
+}
+\end{lstlisting}
+
+\subsubsection{B12. Dropping clone}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+if let Some(var_id) = &var.var_id {
+--  stack.add_var(*var_id, input);
+++  stack.add_var(*var_id, input.clone());
+}
+
+start_plugin_process(
+--  manifest.clone(),
+++  manifest,
+    self.next_plugin_id(),
+    self.self_ref.as_ref().unwrap().clone(),
+);
+
+\end{lstlisting}
+
+\subsubsection{B13. Dropping clone and adding reference}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- let field_id = schema.get_or_create(attribute.clone())?;
+++ let field_id = schema.get_or_create(&attribute)?;
+\end{lstlisting}
+
+\begin{table}[]
+
+\hskip-2.5cm\begin{tabular}{|l|l|l|l|}
+\hline
+
+\multirow{12}{*}{General}        
+& \multirow{2}{*}{Attributes}    & G1  & Adding Attributes to Structs                                        \\
+                                 &                                & G2  & Adding Attributes to Struct Fields                                  \\\cline{2-3}
+                                 & \multirow{3}{*}{Struct}        & G3  & Adding/Removing a Struct field                                      \\
+                                 &                                & G4  & Adding/Removing pub to/from struct field                            \\
+                                 &                                & G5  & Different fields order when initializinng Struct                       \\\cline{2-3}
+                                 & Option                         & G6  & Changing field type T to Option                                          \\\cline{2-3}
+                                 & \multirow{4}{*}{Types}         & G7  & Changing a Struct field type                                        \\
+                                 &                                & G8  & Changing a generic type                                             \\
+                                 &                                & G9  & Change in enum variant value type                                   \\
+                                 &                                & G10 & Changing the type inside a tuple                                         \\\cline{2-3}
+                                 & \multirow{2}{*}{Traits}        & G11 & TraitBound Change                                                   \\
+                                 &                                & G12 & Implementing a different trait for a struct.                            \\\cline{1-3}
+\multirow{13}{*}{Borrow Checker} & \multirow{4}{*}{Ref and Deref} & B1  & Adding \&                                                           \\
+                                 &                                & B2  & Removing \&                                                         \\
+                                 &                                & B3  & Dropping \& from function declaration and dereferencing match \\
+                                 &                                & B4  & Adding *                                                            \\\cline{2-3}
+                                 & \multirow{2}{*}{Mut}           & B5  & Adding mut                                                          \\
+                                 &                                & B6  & Removing mut                                                        \\\cline{2-3}
+                                 & Vector                         & B7  & Vector reference to slice                                           \\\cline{2-3}
+                                 & \multirow{3}{*}{Lifetime}      & B8  & Adding generic Lifetime                                             \\
+                                 &                                & B9  & Dropping static lifetime                                            \\
+                                 &                                & B10 & Dropping Lifetime in field definition                               \\\cline{2-3}
+                                 & \multirow{3}{*}{Clone}         & B11 & Dropping clone and adding dereference                               \\
+                                 &                                & B12 & Dropping clone                                                      \\
+                                 &                                & B13 & Dropping clone and adding reference  & \hline   
+
+\end{tabular}
+\caption{\label{fig:category}Bug Fix Pattern Categorization}
+\end{table}
+
+\begin{algorithm}
+\caption{An algorithm with caption}\label{alg:cap}
+\hspace*{2mm} \textbf{Input:} $R$ (target repositories)  \\
+\hspace*{2mm} \textbf{Output:} $D_g$ (General code changes) \\
+\hspace*{2mm} \textbf{Output:} $D_b$ (BC-related code changes)
+\begin{algorithmic}
+\State $D_g \leftarrow \phi$
+\State $D_b \leftarrow \phi$
+\For{$r \in R$}
+    \For{$c \in \textsc{ExtractCommits}(r)$}
+        \If{$c.msg$ contains bug fixing related keywords}
+            \For{$\{f_b, f_a\} \in \textsc{GetModifiedRustFiles}(c)$}
+                \For{$e \in \textsc{ASTDiff}(\textsc{Parse}(f_b), \textsc{Parse}(f_a))$}
+                    \State $DP \leftarrow \textsc{GetDataPoint}(e)$
+                    \State $DP \leftarrow c.hash \cup f_a.name \cup e.scope \cup DP $
+                    \If{$\textsc{IsBCRelated}(e)$}
+                        \State $DP \leftarrow \textsc{GetBCKeyword}(e) \cup DP $
+                        \State $D_b \leftarrow D_b \cup DP$
+                    \Else
+                        \State $D_g \leftarrow D_g \cup DP$
+                    \EndIf
+                \EndFor
+            \EndFor
+        \EndIf
+    \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\end{document}
