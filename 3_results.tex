@@ -102,7 +102,7 @@ pub struct Languages {
 -- return Poll::Ready(ReadyEvent { ready, tick });
 ++ return Poll::Ready(ReadyEvent { tick, ready });
 
-\end{lstlisting} \\
+\end{lstlisting}
 
 \noindent \textbf{Description:} Remove... ???
 
@@ -123,7 +123,7 @@ pub struct MediaRule {
 
 \noindent \textbf{Description:} Rust is a null safe language, meaning that object references cannot assume null values. If we want void values for our object, we would have to use Option type. Option is essentially an enum with two variants, Some which indicates that our object has an value, and None shows the absence of any value. In this pattern, the developer changes the type of a struct field to an Option of its type. This makes it possible for the developer to modify the program in a way that it covers the scenarios in which the the struct field has no value.
 
-For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\href{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option<MediaQueryList>, and modified the other parts of the source code, accordingly.
+For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option<MediaQueryList>, and modified the other parts of the source code, accordingly.
 
 
 \subsection{Types}
@@ -224,7 +224,7 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 
 \noindent \textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
 
-To give an example, in starship/starship after one of the commits \footnote{\href{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug.
+To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}, file \texttt{git\_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug.
 
 \subsubsection{B2. Removing $\&$}
 
@@ -240,7 +240,7 @@ enums.iter().for_each(|e| {
 
 \noindent \textbf{Description:} In the pattern, an unnecessary borrowing is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function.
 
-\subsubsection{B3. Dropping & from func decl and adding * to match statement}
+\subsubsection{B3. Dropping \& from func decl and adding * to match statement}
 
 \begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
 -- fn to_color_choice(&self) -> ColorChoice {
@@ -254,7 +254,7 @@ enums.iter().for_each(|e| {
 \noindent \textbf{Description:} ???
 
 
-\subsubsection{B4. Modification in dereferencing a string prior to calling .to_string()}
+\subsubsection{B4. Modification in dereferencing a string prior to calling .to\_string()}
 
 \begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
 for p in wixobjs {
@@ -431,7 +431,7 @@ Similar to the previous pattern, this does not change the program behaviour and 
                                  &                                & B10 & Dropping Lifetime in field definition                               \\\cline{2-3}
                                  & \multirow{3}{*}{Clone}         & B11 & Dropping clone and adding dereference                               \\
                                  &                                & B12 & Dropping clone                                                      \\
-                                 &                                & B13 & Dropping clone and adding reference  & \hline   
+                                 &                                & B13 & Dropping clone and adding reference  \& 
 
 \end{tabular}
 \caption{\label{fig:category}Bug Fix Pattern Categorization}
