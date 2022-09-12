@@ -1,27 +1,35 @@
-
+% can we drop the first paragraph altogether?
 Producing bugs has been an unavoidable part of computer programming which happens unintentionally. Researchers have been trying to help software engineers to be more aware of the bug producing practices in development and how to step towards creating bug-free software. One useful step towards that goal would be studying common bug patterns (and their corresponding fixes) that occur across multiple software systems. Research efforts for categorizing common bug patterns date back to 1975 where Edres tried to categorize various bug patterns which occurred in operating system program. 
 
-In this work, we empirically analyze the most popular Rust projects in GitHub, and discover the common bug patterns lied within them. We believe these insights are important for various reasons, primarily for developing program repair tools. Automated program repair tools try to locate bug
-locations in the source code (they include a fault localization module) and then fix them, possibly without human intervention, in a manner such that the modified program meets the desired specifications. A powerful automated program repair system has many useful applications and can significantly simplify the process of debugging, resulting in a reduction in software development cost. The set of common bug fix patterns can be a useful input to an APR system as it directly provides information about fixing similar buggy structures, and that can significantly reduce the search space for patch generation. 
+In this work, we empirically analyze the most popular Rust projects in GitHub, aiming to discover common bug patterns that these projects share. Our interest comes from a desire to develop program repair tools, but we believe these insights can also be of broader service. Automated program repair tools try to locate bug locations in the source code (using a fault localization module) and then generate patches to fix them, possibly without human intervention, so that the modified program meets desired specifications (implicit or explicit). A powerful automated program repair system has many useful applications and could significantly simplify debugging, thus reducing software development cost. A set of common bug fix patterns can be a useful input to an APR system: it directly provides information about fixing similar buggy structures, which can significantly reduce the search space for patch generation. 
 
+% how does this application below differ from the one above?
 Similarly, if we are not observing the desired behaviour from our program, that would indicate that there lies a fault within our program. Fault localization is the process of automatically finding the faulty statement(s) in our program. If a fault localization tool knows about the common bug patterns that can appear in the underlying programming language, it can prioritize the code segment candidates based on their potentials of producing bugs. That would result in a more robust tool as it leverages from historical data.
 
-Moreover, knowing which code patterns in a programming language are more susceptible to produce bugs can help programmers to be more cautious while working with similar code structures. This knowledge can make the developers avoid certain mistakes during production which ultimately would result in reducing the frequent bug patterns within the program. As Monperrus describes, the less frequent bug patterns we keep in our software, the less cost we would have to pay for software maintenance.
+Moreover, knowing which code patterns in a programming language are more susceptible to bugs can help programmers to be more cautious while working with similar code structures. This knowledge can make the developers avoid certain mistakes during production which ultimately would result in reducing the frequent bug patterns within the program. As Monperrus describes, the fewer frequent bug patterns we keep in our software, the less cost we would have to pay for software maintenance.
+% maybe more useful for PL design than for programmers; on the other hand I was just talking about stunts in movies and how people are probably more in danger from the less dangerous ones that they do 1000 times rather than the more dangerous ones that they do 2 times; it would be neat if there was a citation on that, but it's a bit of a distraction and doesn't actually help us get our paper in!
 
-To discuss about a less talked about use case, recently, researchers have been trying to apply deep learning techniques on programs to learn about the semantics of the code or training models which can modify programs towards a specific goal (e.g. bug fix). One challenge is that usually learning tools get fixed size vectors as input and map that to an output. Unlike image data, it is challenging to compress programs into a vector without any loss in semantic information. Current approaches try to define the vector dimensions in a way that accounts for all possible abstract syntax tree forms. That results in a large sparse space for the inputs. Assuming that the deep learning model we are trying to develop is associated with bug fixing tasks, then knowledge about common bug fix patterns can help with pruning input space towards containing less dimensions. That can help with creating more efficient models.
+% sentence too long; split it.
+Moving further afield, researchers have recently been trying to apply deep learning techniques on programs to learn about the semantics of the code or training models which can modify programs towards a specific goal (e.g. bug fix). However, most learning tools get fixed-size vectors as input and map them to outputs. Unlike image data, it is challenging to compress programs into vectors without any semantic information loss. Current approaches try to define the vector dimensions in a way that accounts for all possible abstract syntax tree forms. That results in a large, sparse space for the inputs. Assuming that the deep learning model we are trying to develop is associated with bug fixing tasks, then knowledge about common bug fix patterns can help prune the input space towards containing fewer dimensions. That can help with creating more efficient models.
 
-There have been many studies on detecting and categorizing bug fix patterns in general, or for a specific programming language. We are more interested in the latter, since
-our study is focused on pervasive bug fix patterns in Rust. \\
+% put into a new related work section
+% this is why numbers in front of filenames are kind of annoying, eh
+Many studies have investigated detecting and categorizing bug fix patterns in general, or for a specific programming language. Our study is focused on pervasive bug fix patterns in the specific language Rust. 
+
+% I'll reread this part once it's in its own section.
+\paragraph{General bug fix patterns}
 Yang et al. proposed a mining approach to detect Python bug fix patterns via studying
 fine-grained fixing code changes. In their research, they also examined what portion of the bugs
 could be fixed using automated bug fixing approaches. Moreover, they evaluated the fix patterns in
 the wild and realized that 37\% of the buggy codes could be matched by the fix patterns they had
-found. \\
+found.
 Hanam et al. conducted a similar research but for finding Javascript most pervasive bug fix
 patterns. They presented a large-scale study of the most common bug fix patterns by mining 105K
 commits from 134 server-side JavaScript projects. They used DBSCAN clustering algorithm
 and divided bug fixing change types into 219 clusters, from which they extracted 13 pervasive
-cross-project bug fix patterns. \\
+cross-project bug fix patterns.
+
+\paragraph{Rust bug fix patterns}
 In this work, we study common bug patterns that appear in Rust projects. Rust is a relatively new language that allows programmers to write programs that have low-level
 control over resources, as well as high-level safety guarantees. Originally, Rust was a side
 project developed by Graydon Hoare, a Mozilla employee. The company started to fund this project
@@ -38,11 +46,14 @@ adopted Rust in production. For example, Dropbox decided to migrate to Rust for 
 storage system, since they were not completely satisfied with the features provided by AWS’s S3 or
 Golang.
 
-The main module which governs over the ownership rules is called Borrow Checker. Because of its importance in Rust, we have decided to put discovered patterns into two groups; (1) non-borrow-checker related patterns (General Patterns), and (2) borrow-checker related patterns (BC-Related Patterns). This distinction was really helpful as it made our tool discover clearer results.
+% ok, now back to the introduction section
+% did we talk about ownership yet?
+In Rust, the so-called Borrow Checker component enforces ownership rules. Because of the Borrow Checker's importance in Rust, we split patterns into two groups: (1) non-borrow-checker related patterns (General Patterns), and (2) borrow-checker related patterns (BC-Related Patterns). %This distinction was really helpful as it made our tool discover clearer results. - can you write something better?
 
 We present our discovered insights of our empirical study in the following four research
 questions (RQs):
 
+% we talked about these, right?
 \textbf{RQ1. How successful is our data modelling approach in capturing all the necessary data?} 
 
 \textbf{RQ2. What are the most common AST structures in the bug fixing changes?} 

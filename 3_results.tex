@@ -1,6 +1,12 @@
+% some general comments about the taxonomy go here
+
+% take one example and explain it, e.g. ++ means ..., -- means ....
+% rename to e.g. B.ref.add
+% need quantitative data
+
 \subsection{Attributes}
 
-Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
+Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. % does the inner/outer distinction matter?
 
 \subsubsection{G1. Modifying the attributes of structs}
 
@@ -53,7 +59,8 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. Similar to G1, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+% The sentence "Using..." doesn't actually have an appropriate verb
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. As with G1, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
 
 \subsection{Struct}
 \subsubsection{G3. Adding/Removing a Struct field}
