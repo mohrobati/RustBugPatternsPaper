@@ -1,0 +1,438 @@
+\subsection{Attributes}
+
+Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
+
+\subsubsection{G1. Modifying the attributes of structs}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G1.1: Adding attributes to a struct
+++ #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+
+// G1.2: Removing attributes from a struct
+-- #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+
+// G1.3: Changing an existing attribute of a struct
+-- #[derive(Debug)]
+++ #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways; (G1.1) Adding attributes to the struct, (G1.2) Removing attributes from the struct, (G1.3) Changing the content of an existing attribute. The attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern.
+
+\subsubsection{G2. Modifying the attributes of struct fields}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G2.1: Adding attributes to struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    ++ #[serde(skip_serializing_if = "is_empty")]
+    pub attributes: Option<Attributes>,
+}
+
+// G2.2: Removing attributes from struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    -- #[serde(skip_serializing_if = "Option::is_none")]
+    pub attributes: Option<Attributes>,
+}
+
+// G2.3: Changing attributes of struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    -- #[serde(skip_serializing_if = "Option::is_none")]
+    ++ #[serde(skip_serializing_if = "is_empty")]
+    pub attributes: Option<Attributes>,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. Similar to G1, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+
+\subsection{Struct}
+\subsubsection{G3. Adding/Removing a Struct field}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G3.1: Adding a new field to a struct
+struct InnerListeners {
+    pending: Mutex<Vec<Pending>>,
+    <@\textcolor{red}{--}@> queue_object_name: Uuid,
+}
+
+// G3.2: Removing a field from a struct
+struct SnapshotService<U, R> {
+    uuid_resolver_handle: R,
+    <@\textcolor{green}{++}@> db_name: String,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} A set of new fields are add to or removed from an existing struct. The addition of a new field happens when the developer need to store a new piece of data so they can implement a desired behaviour. The removal of a field  happens when the developer realizes that the field is expendable with respect to the behaviour they want to implement.
+
+\subsubsection{G4. Modifying the access modifiers of struct fields}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+// G4.1: Adding pub to a field
+pub struct HtmlBlock {
+    -- content: BlockContent,
+    ++ pub content: BlockContent,
+    brace: token::Brace,
+} 
+
+// G4.2: Removing pub from a field
+pub struct Languages {
+--  pub named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+++  named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+    extensions: HashMap<String, Arc<LanguageDefinition>>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Adding pub to a struct field makes it possible to access that field within external modules. In the instances of this cluster, adding pub access modifier happened in a bug fixing change, where the developer needed to access a field which had not been granted public access. On the other hand, the public access might be revoked if the developer realizes there is no external access to the field.
+
+\subsubsection{G5. Different fields order when initializing Struct}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- return Poll::Ready(ReadyEvent { ready, tick });
+++ return Poll::Ready(ReadyEvent { tick, ready });
+
+\end{lstlisting} \\
+
+\noindent \textbf{Description:} Remove... ???
+
+\subsection{Option}
+\subsubsection{G6. Changing field type T to T$\langle$Option$\rangle$}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[ast_node("MediaRule")]
+pub struct MediaRule {
+    pub span: Span,
+    -- pub media: MediaQueryList,
+    ++ pub media: Option<MediaQueryList>,
+    pub rules: Vec<Rule>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Rust is a null safe language, meaning that object references cannot assume null values. If we want void values for our object, we would have to use Option type. Option is essentially an enum with two variants, Some which indicates that our object has an value, and None shows the absence of any value. In this pattern, the developer changes the type of a struct field to an Option of its type. This makes it possible for the developer to modify the program in a way that it covers the scenarios in which the the struct field has no value.
+
+For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\href{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option<MediaQueryList>, and modified the other parts of the source code, accordingly.
+
+
+\subsection{Types}
+\subsubsection{G7. Changing a struct field type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub struct Manifest {
+  -- pub features: Vec<String>,
+  ++ pub features: HashSet<String>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. These reasons can be a step for implementing a new feature or rectifying the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement.
+
+\subsubsection{G8. Changing a generic type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Anchor {
+    -- point: Point<usize>,
+    ++ point: Point<isize>,
+    side: Side,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} This a change of the generic (parametric) type of a struct field. Similar to G7, this change can also happen for the mentioned reasons.
+
+\subsubsection{G9. Change in enum variant value type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResolvedDependency {
+  Resolved(ModuleSpecifier),
+  -- Err(String),
+  ++ Err(ResolvedDependencyErr),
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} In Rust, we can specify the type of the value that an enum variant can store. Using this feature, we can avoid using a struct alongside our enum variants to specify the value type. This change pattern is associated with a change in enum variant types.
+
+\subsubsection{G10. Changing the type inside a tuple}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[allow(dead_code)]
+pub struct CoreState {
+    // Other fields
+    -- pending_views: Vec<ViewId>,
+    ++ pending_views: Vec<(ViewId, Table)>,
+    peer: Client
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a tuple with fewer number of arguments.
+
+\subsection{Traits}
+\subsubsection{G11. TraitBound Change}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+-- pub struct EventLoop<T: tty::EventedReadWrite> {
+++ pub struct EventLoop<T: tty::EventedPty> {
+    poll: mio::Poll,
+    // Other fields
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern related to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
+
+\subsubsection{G12. Implementing a different trait for a struct}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+-- impl ToDebug for ShellError {
+++ impl FormatDebug for ShellError {
+        // Implementing functions ...
+   }
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Remove... ???
+
+\subsection{Ref and Deref}
+\subsubsection{B1. Adding $\&$}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+let repo = replace(&mut *contents, Processing).inner_repo();
+-- let statuses = repo_to_statuses(repo, &self.workdir);
+++ let statuses = repo_to_statuses(&repo, &self.workdir);
+\end{lstlisting}
+
+\noindent \textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
+
+To give an example, in starship/starship after one of the commits \footnote{\href{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug.
+
+\subsubsection{B2. Removing $\&$}
+
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+enums.iter().for_each(|e| {
+    let mut enum_template = EnumTemplate::new();
+    -- enum_template.set_message_enum(&e);
+    ++ enum_template.set_message_enum(e);
+    // Other statements
+});
+\end{lstlisting}
+
+\noindent \textbf{Description:} In the pattern, an unnecessary borrowing is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function.
+
+\subsubsection{B3. Dropping & from func decl and adding * to match statement}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- fn to_color_choice(&self) -> ColorChoice {
+--     match *self {
+++ fn to_color_choice(self) -> ColorChoice {
+++     match self {
+           // Statements
+       }
+\end{lstlisting}
+
+\noindent \textbf{Description:} ???
+
+
+\subsubsection{B4. Modification in dereferencing a string prior to calling .to_string()}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+for p in wixobjs {
+--  args.push(p.to_string());
+++  args.push((*p).to_string());
+}
+
+let displayed_attributes = schema.clone().map(|s| {
+    s.displayed_name()
+        .iter()
+--      .map(|s| (*s).to_string())
+++      .map(|s| s.to_string())
+        .collect::<HashSet<String>>()
+});
+\end{lstlisting}
+
+\noindent \textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling $to\_string()$ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of $T$, while $T$ directly implements $to\_string()$. It is faster and more performance efficient to dereference the object and then call $to\_string()$ on it. The deletion case indicates a redundant dereference, thus it is removed.
+
+
+\subsection{Mut}
+\subsubsection{B5. Adding mut}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+parser::Parser::new(args)
+        .parse_module()
+--      .map_err(|e| {
+++      .map_err(|mut e| {
+            e.emit();
+            ()
+        })?
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour.
+
+\subsubsection{B6. Removing mut}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- let mut tx = tx.clone();
+++ let tx = tx.clone();
+\end{lstlisting}
+
+\noindent \textbf{Description:} Dropping the mut keyword before a variable, as we do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed through this tool.
+
+\subsection{Vector}
+\subsubsection{B7. Vector reference to slice}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub fn expand_delimited_square(
+--  children: &Vec<TokenNode>,
+++  children: &[TokenNode],
+) -> Result<hir::Expression, ParseError> {
+    // body
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} ???
+
+\subsection{Lifetime}
+\subsubsection{B8. Adding generic Lifetime}
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+#[allow(dead_code)]
+-- fn api_error(webview: &mut Webview, error_fn: String, message: &str) {
+++ fn api_error(webview: &mut Webview<'_>, error_fn: String, message: &str) {
+  let reject_code = tauri_api::rpc::format_callback(error_fn, message);
+  webview.eval(&reject_code)
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} ???
+
+\subsubsection{B9. Dropping static lifetime}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+-- const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
+++ const QUEUE_SIZES: &[u16] = &[QUEUE_SIZE];
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} ???
+
+\subsubsection{B10. Dropping Lifetime in field definition}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub struct Table<'a> {
+    columns: Vec<Column>,
+    colours: &'a Colours,
+    env: &'a Environment,
+    widths: TableWidths,
+    -- time_format: &'a TimeFormat,
+    ++ time_format: TimeFormat,
+    size_format: SizeFormat,
+    git: Option<&'a GitCache>,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} ???
+
+\subsection{Clone}
+\subsubsection{B11. Dropping clone (and adding dereference)}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub fn reset(&mut self, template: &Cell) {
+    // memcpy template to self
+--  *self = template.clone();
+++  *self = *template;
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+
+\subsubsection{B12. Dropping clone}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+if let Some(var_id) = &var.var_id {
+--  stack.add_var(*var_id, input);
+++  stack.add_var(*var_id, input.clone());
+}
+
+start_plugin_process(
+--  manifest.clone(),
+++  manifest,
+    self.next_plugin_id(),
+    self.self_ref.as_ref().unwrap().clone(),
+);
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+
+\subsubsection{B13. Dropping clone and adding reference}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- let field_id = schema.get_or_create(attribute.clone())?;
+++ let field_id = schema.get_or_create(&attribute)?;
+\end{lstlisting}
+
+\noindent \textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
+
+Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive.
+
+
+
+\begin{table}[]
+
+\hskip-2.5cm\begin{tabular}{|l|l|l|l|}
+\hline
+
+\multirow{12}{*}{General}        
+& \multirow{2}{*}{Attributes}    & G1  & Adding Attributes to Structs                                        \\
+                                 &                                & G2  & Adding Attributes to Struct Fields                                  \\\cline{2-3}
+                                 & \multirow{3}{*}{Struct}        & G3  & Adding/Removing a Struct field                                      \\
+                                 &                                & G4  & Adding/Removing pub to/from struct field                            \\
+                                 &                                & G5  & Different fields order when initializinng Struct                       \\\cline{2-3}
+                                 & Option                         & G6  & Changing field type T to Option                                          \\\cline{2-3}
+                                 & \multirow{4}{*}{Types}         & G7  & Changing a Struct field type                                        \\
+                                 &                                & G8  & Changing a generic type                                             \\
+                                 &                                & G9  & Change in enum variant value type                                   \\
+                                 &                                & G10 & Changing the type inside a tuple                                         \\\cline{2-3}
+                                 & \multirow{2}{*}{Traits}        & G11 & TraitBound Change                                                   \\
+                                 &                                & G12 & Implementing a different trait for a struct.                            \\\cline{1-3}
+\multirow{13}{*}{Borrow Checker} & \multirow{4}{*}{Ref and Deref} & B1  & Adding \&                                                           \\
+                                 &                                & B2  & Removing \&                                                         \\
+                                 &                                & B3  & Dropping \& from function declaration and dereferencing match \\
+                                 &                                & B4  & Adding *                                                            \\\cline{2-3}
+                                 & \multirow{2}{*}{Mut}           & B5  & Adding mut                                                          \\
+                                 &                                & B6  & Removing mut                                                        \\\cline{2-3}
+                                 & Vector                         & B7  & Vector reference to slice                                           \\\cline{2-3}
+                                 & \multirow{3}{*}{Lifetime}      & B8  & Adding generic Lifetime                                             \\
+                                 &                                & B9  & Dropping static lifetime                                            \\
+                                 &                                & B10 & Dropping Lifetime in field definition                               \\\cline{2-3}
+                                 & \multirow{3}{*}{Clone}         & B11 & Dropping clone and adding dereference                               \\
+                                 &                                & B12 & Dropping clone                                                      \\
+                                 &                                & B13 & Dropping clone and adding reference  & \hline   
+
+\end{tabular}
+\caption{\label{fig:category}Bug Fix Pattern Categorization}
+\end{table}

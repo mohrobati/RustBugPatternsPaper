@@ -1,0 +1,30 @@
+
+
+\begin{algorithm}
+\caption{An algorithm with caption}\label{alg:cap}
+\hspace*{2mm} \textbf{Input:} $R$ (target repositories)  \\
+\hspace*{2mm} \textbf{Output:} $D_g$ (General code changes) \\
+\hspace*{2mm} \textbf{Output:} $D_b$ (BC-related code changes)
+\begin{algorithmic}
+\State $D_g \leftarrow \phi$
+\State $D_b \leftarrow \phi$
+\For{$r \in R$}
+    \For{$c \in \textsc{ExtractCommits}(r)$}
+        \If{$c.msg$ contains bug fixing related keywords}
+            \For{$\{f_b, f_a\} \in \textsc{GetModifiedRustFiles}(c)$}
+                \For{$e \in \textsc{ASTDiff}(\textsc{Parse}(f_b), \textsc{Parse}(f_a))$}
+                    \State $DP \leftarrow \textsc{GetDataPoint}(e)$
+                    \State $DP \leftarrow c.hash \cup f_a.name \cup e.scope \cup DP $
+                    \If{$\textsc{IsBCRelated}(e)$}
+                        \State $DP \leftarrow \textsc{GetBCKeyword}(e) \cup DP $
+                        \State $D_b \leftarrow D_b \cup DP$
+                    \Else
+                        \State $D_g \leftarrow D_g \cup DP$
+                    \EndIf
+                \EndFor
+            \EndFor
+        \EndIf
+    \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
