@@ -1,5 +1,9 @@
 \subsection{Evaluating the data modelling approach (RQ1)}
 
+[explain why RQ1]
+
+\textbf{RQ1. Does our data modelling approach capture the most important aspect of program changes?} 
+
 As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fix-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST. Here we want to evaluate the effectiveness of our encoding.
 
 The general idea for our evaluation is whether the most important program elements has the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (Fig ref).
