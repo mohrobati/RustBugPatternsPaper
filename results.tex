@@ -1,0 +1,369 @@
+\subsection{Evaluating the data modelling approach (RQ1)}
+
+As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fix-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST. Here we want to evaluate the effectiveness of our encoding.
+
+The general idea for our evaluation is whether the most important program elements has the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (Fig ref).
+
+We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
+
+We carried out two manual experiments for evaluating our encoding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carry out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its encoding correctness. The final results are TBD\% and TBD\% correctness in the first and second experiments, respectively, which shows the effectiveness of our encoding mechanism.
+
+\subsection{Common Bug Fix Patterns (RQ2)}
+
+\subsection{Attributes}
+
+Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. \\
+
+\noindent \textit{ \textbf{G.attr.struct.} Modifying the attributes of structs}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G.attr.struct.add: Adding attributes to a struct
+++ #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+
+//G.attr.struct.drop: Removing attributes from a struct
+-- #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+
+// G.attr.struct.change: Changing an existing attribute of a struct
+-- #[derive(Debug)]
+++ #[derive(Debug, Clone)]
+pub struct Call {
+/// body 
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways; (G1.1) Adding attributes to the struct, (G1.2) Removing attributes from the struct, (G1.3) Changing the content of an existing attribute. The attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
+
+\noindent \textit{ \textbf{G.attr.struct.field} Modifying the attributes of struct fields}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G.attr.struct.field.add: Adding attributes to struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    ++ #[serde(skip_serializing_if = "is_empty")]
+    pub attributes: Option<Attributes>,
+}
+
+// G.attr.struct.field.drop: Removing attributes from struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    -- #[serde(skip_serializing_if = "Option::is_none")]
+    pub attributes: Option<Attributes>,
+}
+
+// G.attr.struct.field.change: Changing attributes of struct fields
+#[derive(Serialize)]
+pub struct Retain {
+    -- #[serde(skip_serializing_if = "Option::is_none")]
+    ++ #[serde(skip_serializing_if = "is_empty")]
+    pub attributes: Option<Attributes>,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. As with G1, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+
+\subsection{Struct} 
+\noindent \textit{ \textbf{G.struct.field} Adding/Removing a struct field}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+// G.struct.field.add: Adding a new field to a struct
+struct InnerListeners {
+    pending: Mutex<Vec<Pending>>,
+    <@\textcolor{red}{--}@> queue_object_name: Uuid,
+}
+
+// G.struct.field.drop: Removing a field from a struct
+struct SnapshotService<U, R> {
+    uuid_resolver_handle: R,
+    <@\textcolor{green}{++}@> db_name: String,
+}
+\end{lstlisting}
+
+\noindent \textbf{Description:} A set of new fields are add to or removed from an existing struct. The addition of a new field happens when the developer need to store a new piece of data so they can implement a desired behaviour. The removal of a field  happens when the developer realizes that the field is expendable with respect to the behaviour they want to implement. \\
+
+\noindent \textit{ \textbf{G.struct.field.pub} Modifying the access modifiers of struct fields}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+// G.struct.field.pub.add: Adding pub to a field
+pub struct HtmlBlock {
+    -- content: BlockContent,
+    ++ pub content: BlockContent,
+    brace: token::Brace,
+} 
+
+// G.struct.field.pub.drop: Removing pub from a field
+pub struct Languages {
+--  pub named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+++  named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+    extensions: HashMap<String, Arc<LanguageDefinition>>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Adding pub to a struct field makes it possible to access that field within external modules. In the instances of this cluster, adding pub access modifier happened in a bug fixing change, where the developer needed to access a field which had not been granted public access. On the other hand, the public access might be revoked if the developer realizes there is no external access to the field.
+
+\subsection{Option}
+\vspace{3mm}
+
+\noindent \textit{ \textbf{G.option} Changing field type T to T$\langle$Option$\rangle$}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+
+#[ast_node("MediaRule")]
+pub struct MediaRule {
+    pub span: Span,
+    -- pub media: MediaQueryList,
+    ++ pub media: Option<MediaQueryList>,
+    pub rules: Vec<Rule>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Rust is a null safe language, meaning that object references cannot assume null values. If we want void values for our object, we would have to use Option type. Option is essentially an enum with two variants, Some which indicates that our object has an value, and None shows the absence of any value. In this pattern, the developer changes the type of a struct field to an Option of its type. This makes it possible for the developer to modify the program in a way that it covers the scenarios in which the the struct field has no value.
+
+For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option<MediaQueryList>, and modified the other parts of the source code, accordingly.
+
+
+\subsection{Types}
+\vspace{3mm}
+
+\noindent \textit{ \textbf{G.type.field} Changing a struct field type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub struct Manifest {
+  -- pub features: Vec<String>,
+  ++ pub features: HashSet<String>,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. These reasons can be a step for implementing a new feature or rectifying the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement. \\
+
+
+\noindent \textit{ \textbf{G.type.generic} Changing a generic type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+#[derive(Debug, Clone, PartialEq)]
+pub struct Anchor {
+    -- point: Point<usize>,
+    ++ point: Point<isize>,
+    side: Side,
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} This a change of the generic (parametric) type of a struct field. Similar to G7, this change can also happen for the mentioned reasons. \\
+
+\noindent \textit{ \textbf{G.type.enum.variant} Change in enum variant value type}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResolvedDependency {
+  Resolved(ModuleSpecifier),
+  -- Err(String),
+  ++ Err(ResolvedDependencyErr),
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} In Rust, we can specify the type of the value that an enum variant can store. Using this feature, we can avoid using a struct alongside our enum variants to specify the value type. This change pattern is associated with a change in enum variant types. \\
+
+
+\noindent \textit{ \textbf{G.type.tuple} Changing the type inside a tuple}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+#[allow(dead_code)]
+pub struct CoreState {
+    // Other fields
+    -- pending_views: Vec<ViewId>,
+    ++ pending_views: Vec<(ViewId, Table)>,
+    peer: Client
+}
+\end{lstlisting}
+
+
+
+\noindent \textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a tuple with fewer number of arguments.
+
+\subsection{Traits}
+\noindent \textit{ \textbf{G.trait.bound} TraitBound Change}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- pub struct EventLoop<T: tty::EventedReadWrite> {
+++ pub struct EventLoop<T: tty::EventedPty> {
+    poll: mio::Poll,
+    // Other fields
+}
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern related to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
+
+\subsection{BC-Related Bug Fix Patterns (RQ3)}
+
+\subsubsection{Clone}
+
+\noindent \textit{ \textbf{BC.clone.ref} Dropping clone and adding borrowing}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- let field_id = schema.get_or_create(attribute.clone())?;
+++ let field_id = schema.get_or_create(&attribute)?;
+\end{lstlisting}
+
+\noindent \textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
+
+Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
+
+\noindent \textit{ \textbf{BC.clone.drop} Removing clone}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+start_plugin_process(
+--  manifest.clone(),
+++  manifest,
+    self.next_plugin_id(),
+    self.self_ref.as_ref().unwrap().clone(),
+);
+\end{lstlisting}
+
+\noindent \textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+
+\subsubsection{Ref and Deref}
+
+\noindent \textit{ \textbf{BC.ref.add} Adding Borrowing}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+let repo = replace(&mut *contents, Processing).inner_repo();
+-- let statuses = repo_to_statuses(repo, &self.workdir);
+++ let statuses = repo_to_statuses(&repo, &self.workdir);
+\end{lstlisting}
+
+\noindent \textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
+
+To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug. \\
+
+\noindent \textit{ \textbf{BC.ref.drop} Removing Borrowing}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+enums.iter().for_each(|e| {
+    let mut enum_template = EnumTemplate::new();
+    -- enum_template.set_message_enum(&e);
+    ++ enum_template.set_message_enum(e);
+    // Other statements
+});
+\end{lstlisting}
+
+\noindent \textbf{Description:} In the pattern, an unnecessary borrowing is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function. \\
+
+
+\noindent \textit{ \textbf{BC.deref.to\_string()} Modification in dereferencing a string prior to calling to\_string()}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+for p in wixobjs {
+--  args.push(p.to_string());
+++  args.push((*p).to_string());
+}
+
+let displayed_attributes = schema.clone().map(|s| {
+    s.displayed_name()
+        .iter()
+--      .map(|s| (*s).to_string())
+++      .map(|s| s.to_string())
+        .collect::<HashSet<String>>()
+});
+\end{lstlisting}
+
+\noindent \textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling $to\_string()$ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of $T$, while $T$ directly implements $to\_string()$. It is faster and more performance efficient to dereference the object and then call $to\_string()$ on it. The deletion case indicates a redundant dereference, thus it is removed.
+
+
+\subsubsection{Mut}
+
+\noindent \textit{ \textbf{BC.mut.add} Adding mutability}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+parser::Parser::new(args)
+        .parse_module()
+--      .map_err(|e| {
+++      .map_err(|mut e| {
+            e.emit();
+            ()
+        })?
+\end{lstlisting}
+
+\noindent \textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour.
+
+\noindent \textit{ \textbf{BC.mut.drop} Dropping mutability}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- let mut tx = tx.clone();
+++ let tx = tx.clone();
+\end{lstlisting}
+
+\noindent \textbf{Description:} Dropping the mut keyword before a variable, as we do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed through this tool.
+
+\subsubsection{Vector}
+
+\noindent \textit{ \textbf{BC.vec.slice} Changing a Vec reference to Slice}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+pub fn expand_delimited_square(
+--  children: &Vec<TokenNode>,
+++  children: &[TokenNode],
+) -> Result<hir::Expression, ParseError> {
+    // body
+}
+\end{lstlisting}
+\noindent \textbf{Description:} In struct field definition or the types of the function formal parameters, type $\&Vec\<T\>$ changes to $\&[T]$. Clippy can detect the opportunity to apply this pattern. The reason is reducing type complication, as slice types in the form of $\&[T]$ or $\&str$ are usually sufficient for most use cases. 
+
+\subsubsection{Lifetime}
+\noindent \textit{ \textbf{BC.lifetime.static.drop} Dropping static lifetime}
+
+\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+-- const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
+++ const QUEUE_SIZES: &[u16] = &[QUEUE_SIZE];
+
+\end{lstlisting}
+
+\noindent \textbf{Description:} Removing the static keyword from a const variable declaration. This change can be applied using Clippy. If the presence of static is not required, it is better that we omit it as keeping it might create complicate types in our program.
+
+
+
+\begin{table}[]
+
+\begin{tabular}{|l|l|l|l|}
+\hline
+
+\multirow{10}{*}{General}        
+& \multirow{2}{*}{Attributes}    & G.attr.struct  & Modifying the attributes of structs                                        \\
+                                 &                                & G.attr.struct.field  & Modifying the attributes of struct fields                                  \\\cline{2-3}
+                                 & \multirow{2}{*}{Struct}        & G.struct.field  & Adding/Removing a struct field                                      \\
+                                 &                                & G.struct.field.pub  & Modifying the access modifiers of struct fields     
+                                  \\\cline{2-3}
+                                 & Option                         & G.option  & Changing field type T to T$\langle$Option$\rangle$                     \\\cline{2-3}
+                                 & \multirow{4}{*}{Types}         & G.type.field  & Changing a struct field type                                        \\
+                                 &                                & G.type.generic  & Changing a generic type                                             \\
+                                 &                                & G.type.enum.variant  & Change in enum variant value type                                   \\
+                                 &                                & G.type.tuple & Changing the type inside a tuple                                         \\\cline{2-3}
+                                 & \multirow{1}{*}{Traits}        & G.trait.bound & TraitBound Change                                               \\\cline{1-3}
+\multirow{9}{*}{Borrow Checker} &
+\multirow{2}{*}{Clone}                                         & BC.clone.ref & Dropping clone and adding borrowing                                                   \\
+                                 &                                & BC.clone.drop & Dropping clone   
+                                    \\\cline{2-3}
+    & \multirow{3}{*}{Ref and Deref} & BC.ref.add  & Adding Borrowing                                                           \\
+                                 &                                & BC.ref.drop  & Removing Borrowing                                                         \\
+                                 &                                & BC.deref.to\_string  & Modification in dereferencing a string prior to calling to\_string()                                                            \\\cline{2-3}
+                                 & \multirow{2}{*}{Mut}           & BC.mut.add  & Adding mutability                                                          \\
+                                 &                                & BC.mut.drop  & Dropping mutability                                                        \\\cline{2-3}
+                                 & Vector                         & BC.vec.slice  & Changing a Vec reference to Slice                                           \\\cline{2-3}
+                                 & \multirow{1}{*}{Lifetime}      
+                                                                 & BC.lifetime.static  & Dropping static lifetime    &                        
+                                 \hline   
+
+\end{tabular}
+\caption{\label{fig:category}Bug Fix Pattern Categorization}
+\end{table}
