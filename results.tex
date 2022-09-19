@@ -249,7 +249,7 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 
 \noindent \textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
 
-To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug. \\
+To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git\_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug. \\
 
 \noindent \textit{ \textbf{BC.ref.drop} Removing Borrowing}
 
@@ -322,7 +322,7 @@ pub fn expand_delimited_square(
     // body
 }
 \end{lstlisting}
-\noindent \textbf{Description:} In struct field definition or the types of the function formal parameters, type $\&Vec\<T\>$ changes to $\&[T]$. Clippy can detect the opportunity to apply this pattern. The reason is reducing type complication, as slice types in the form of $\&[T]$ or $\&str$ are usually sufficient for most use cases. 
+\noindent \textbf{Description:} In struct field definition or the types of the function formal parameters, type \verb+&Vec<T>+ changes to \verb+&[T]+. Clippy can detect the opportunity to apply this pattern. The reason is reducing type complication, as slice types in the form of \verb+&[T]+ or \verb+&str+ are usually sufficient for most use cases. 
 
 \subsubsection{Lifetime}
 \noindent \textit{ \textbf{BC.lifetime.static.drop} Dropping static lifetime}
@@ -365,8 +365,7 @@ pub fn expand_delimited_square(
                                  &                                & BC.mut.drop  & Dropping mutability                                                        \\\cline{2-3}
                                  & Vector                         & BC.vec.slice  & Changing a Vec reference to Slice                                           \\\cline{2-3}
                                  & \multirow{1}{*}{Lifetime}      
-                                                                 & BC.lifetime.static  & Dropping static lifetime    &                        
-                                 \hline   
+                                                                 & BC.lifetime.static  & Dropping static lifetime    
 
 \end{tabular}
 \caption{\label{fig:category}Bug Fix Pattern Categorization}
