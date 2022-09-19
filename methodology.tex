@@ -21,9 +21,21 @@ We used Pydriller, which is a repository miner for Python. Our target repositori
 
 \subsubsection{Parsing Programs}
 
-For parsing our Rust programs, we use Syn crate which is a parsing library for parsing a stream of tokens into a syntax tree. The parser covers all the Rust language features and the list of all available tokens can be found in its web page. The token types (non terminals) are primarily divided into two main groups; Structs and Enums. The dimensions of our datapoints have been designed in a way that it adheres to the non terminals described in these two groups. We parse two versions of a Rust changed file in a commit; the file before the commit and after it. We will obtain two trees created by Syn. The change that transforms the first tree to the second one, yields the fix which was applied in the commit. 
+% TODO: tokens are not non terminals
+% what do you mean about structs and enums?
+% try to remove redundant content with respect to what is above
+As mentioned above, we use Syn for parsing Rust. Syn handles all of Rust. Syn's nonterminals are primarily divided into two main groups; Structs and Enums. The dimensions of our datapoints have been designed in a way that it adheres to the nonterminals described in these two groups. We parse two versions of a Rust changed file in a commit; the file before the commit and after it. We will obtain two trees created by Syn. The change that transforms the first tree to the second one yields the fix which was applied in the commit. 
 
-To find this difference, we use dictdiff, a Python library to find the diff of two Python dictionaries. That is why, we are required to develop a program transformer which transforms Syn tree output to Python dictionary. We wrote a simple transformer using PLY, which is is an implementation of lex and yacc parsing tools for Python. After obtaining the syntax trees in Python dictionary format, we are able to use dictdiff tool to determine the ASTDiff. The dictdiff tool also determines the type of the modification; 1. 'add': A new structure has been added to the tree, 2. 'remove': An structure has been dropped from the tree, 3. 'change': The content of a sub structure of the first tree has changed. In addition to that, dictdiff also determines the context within which the modification has occured. This context happens to be the root elements (FIND A BETTER TERM FOR ROOT ELEMENTS) in our file, e.g. function blocks, struct blocks, impl blocks, etc. The modified content within a context is still in the form of tree. Our objective right now is to find primary elements in our diff that describe the semantics of occurred change.
+To find this difference, we use dictdiff, a Python library to find the diff of two Python dictionaries. Using the PLY tool (a Python implementation of lex and yacc), we wrote a simple transformer from the Rust AST into Python dictionaries. After obtaining the syntax trees in Python dictionary format, we can use dictdiff to determine the ASTDiff. 
+
+dictdiff tool provides modifications' types: 
+\begin{itemize}
+\item `add': A new structure has been added to the tree; 
+\item `remove': A structure has been dropped from the tree; 
+\item `change': The content of a sub structure of the first tree has changed.
+\end{itemize}
+dictdiff also determines the context within which the modification has occured. This context happens to be the root elements (FIND A BETTER TERM FOR ROOT ELEMENTS) in our file, e.g. function blocks, struct blocks, impl blocks, etc. The modified content within a context is still in the form of tree. Our objective right now is to find primary elements in our diff that describe the semantics of occurred change.
+% rework the above paragraph
 
 \subsubsection{Path Linearization}
 
