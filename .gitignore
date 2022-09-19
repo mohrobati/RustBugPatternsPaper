@@ -3,7 +3,11 @@ template.aux
 template.log
 template.out
 template.pdf
+template.fdb_latexmk
+template.fls
 main.aux
 main.log
 main.out
 main.pdf
+main.fdb_latexmk
+main.fls
