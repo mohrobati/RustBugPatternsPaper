@@ -1,14 +1,21 @@
-\subsection{Overview}
+% why fixed-size?
+% or are you saying that everyone does this, and then in the next paragraph, say that we do this too
+% The reason is that both distance-based and density-based clustering algorithms work with fixed size datapoints.
+The general idea for automatically finding the pervasive code patterns within a list of programs is to parse the programs and encode the important parts of the derived AST in fixed sized datapoints. Then, one uses a clustering algorithms to cluster these datapoints. Work in this vein makes the assumption that each cluster corresponds to one change pattern.
 
-The general idea for automatically finding the pervasive code patterns within a list of programs is to parse the programs and encode the important parts of the derived AST in fixed sized datapoints. Then, we can use the clustering algorithms, to cluster these datapoints, with the hope that each cluster manifests a certain pattern of change.
+% put a footnote with the URL for Syn
+% which APIs can't be used generally?
+Our pipeline for finding pervasive patterns in Rust programs also follows this idea. We decided to implement our pipeline completely in Python. To make this work, we need a way to get an AST as a Python dictionary. Syn is a Rust crate which is designed to be employed in Rust procedural macros. However, it includes a parser which is suitable for our purposes; we simply had to write a preprocessor to transform Syn AST output into Python dictionaries.
 
-Our pipeline for finding pervasive patterns in Rust programs also follows this idea. We use Syn as our Rust parser. Syn is a Rust crate which is designed to be employed in Rust procedural macros, however its APIs can be used generally. We decided to implement our pipeline completely in Python. That is why, we had to develop a preprocessor to transform Syn AST output to Python dictionary.
+A change pattern categorizes a class of changes. We thus need to define what a change is. For our purposes, a change is ....
+To compute the contents of a change, we need two code revisions: the revision before the commit, and the revision after it. After parsing these two revisions, we will have two ASTs, encoded in two Python dictionaries. The change in the code can be computed by analyzing the difference of these two trees, which we call the ASTDiff. To derive the ASTDiff we use dictdiff Python library. 
+% the wording in the two last sentences is inexact. Let's try to make clear exactly what the steps are, and use the right verbs.
 
-To find out what has changed in a certain commit, we need two code revisions; the revision before the commit, and the revision after it. After parsing these two revisions, we will have two ASTs which are encoded in two separate Python dictionaries. The change in the code can be inferred by analyzing the difference of these two trees (ASTDiff). To derive the ASTDiff we use dictdiff Python library. 
+An ASTDiff may include an arbitrary number of semantic changes. We are interested in finding the most important change within an ASTDiff and encoding that change in our datapoints. Sections ? and ? provide a detailed explanation of how we select the most important semantic information, which then helped us to effectively obtain meaningful clusters. % justification of that last assertion about meaningful clusters? e.g. we found that this helped us to effectively obtain meaningful clusters; but maybe we just don't know.
 
-Now, a challenging problem is how to specify the most important structures within this ASTDiff. This step is crucial as it is through this step that we select the semantic information we want to encode in our datapoints later on. In Section ? and ?, we provide a detailed explanation of the method we used to select the most important semantic information which then helped us to effectively obtain meaningful clusters.
-
-We used Pydriller, which is a repository miner for Python. Our target repositories were the top 18 most starred open source Rust projects on GitHub. We mined all the bug related commits and ran them through our pipeline. Then, we applied DBSCAN clustering algorithm on the obtained datapoints. In Section ? we discuss why we chose DBSCAN for clustering and how we tuned it to improve clusters quality. 
+% why do we use pydriller?
+% section N explains how we found the bug-related commits
+We used Pydriller, which is a repository miner for Python. Our target repositories were the top 18 most starred open source Rust projects on GitHub. We mined all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm on the obtained datapoints. In Section ? we discuss why we chose DBSCAN for clustering and how we tuned it to improve clusters quality. 
 
 \subsection{Data modelling}
 
