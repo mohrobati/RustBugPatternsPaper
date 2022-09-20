@@ -40,7 +40,7 @@ grestore
 %
 %\documentclass{svjour3}                     % onecolumn (standard format)
 %\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
-\documentclass[smallextended]{svjour3}       % onecolumn (second format)
+\documentclass[smallextended]{build/svjour3}       % onecolumn (second format)
 %\documentclass[twocolumn]{svjour3}          % twocolumn
 %
 \smartqed  % flush right qed marks, e.g. at end of proof
@@ -60,7 +60,7 @@ grestore
 % \journalname{myjournal}
 %
 
-\usepackage{listings, listings-rust}
+\usepackage{listings, build/listings-rust}
 \lstset{escapeinside={<@}{@>}}
 \usepackage{hyperref}
 \usepackage{tabularx}
@@ -114,19 +114,19 @@ subject classification numbers as needed.
 \end{abstract}
 
 \section{Introduction}
-\subfile{introduction}
+\subfile{sections/introduction}
 
 \section{Methodology}
-\subfile{methodology}
+\subfile{sections/methodology}
 
 \section{Results}
-\subfile{results}
+\subfile{sections/results}
 
 \section{Discussion}
-\subfile{discussion}
+\subfile{sections/discussion}
 
 \section{Conclusion}
-\subfile{conclusion}
+\subfile{sections/conclusion}
 
 
 

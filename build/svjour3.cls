@@ -128,7 +128,7 @@
 \ClassInfoNoLine{Springer-SVJour3}{extra/valid Springer sub-package (-> *.clo)
 \MessageBreak not found in option list of \string\documentclass
 \MessageBreak  - autoactivating "global" style}{}
-\input{svglov3.clo}
+\input{build/svglov3.clo}
 \else
 \@ifundefined{validfor}{%
 \ClassError{Springer-SVJour3}{Possible option clash for sub-package
