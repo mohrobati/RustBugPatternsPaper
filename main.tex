@@ -40,7 +40,7 @@ grestore
 %
 %\documentclass{svjour3}                     % onecolumn (standard format)
 %\documentclass[smallcondensed]{svjour3}     % onecolumn (ditto)
-\documentclass[smallextended]{build/svjour3}       % onecolumn (second format)
+\documentclass[smallextended]{svjour3}       % onecolumn (second format)
 %\documentclass[twocolumn]{svjour3}          % twocolumn
 %
 \smartqed  % flush right qed marks, e.g. at end of proof
@@ -57,10 +57,10 @@ grestore
 % \newcommand{}{}
 %
 % Insert the name of "your journal" with
-% \journalname{myjournal}
+\journalname{Empirical Software Engineering}
 %
 
-\usepackage{listings, build/listings-rust}
+\usepackage{listings, listings-rust}
 \lstset{escapeinside={<@}{@>}}
 \usepackage{hyperref}
 \usepackage{tabularx}

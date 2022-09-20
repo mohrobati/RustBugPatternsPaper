@@ -6,13 +6,13 @@ Our pipeline for finding pervasive patterns in Rust programs also follows this i
 A change pattern categorizes a class of changes. We thus need to define what a change is. For our purposes, a change is ....
 To compute the contents of a change, we need two code revisions: the revision before the commit, and the revision after it. After parsing these two revisions, we will have two ASTs, encoded in two Python dictionaries. A tree diff algorithm would specify the differences between two arbitrary trees. If the trees are abstracts syntax trees of programs, we simply call it an ASTDiff. We use dictdiff to obtain ASTDiffs.
 
-An ASTDiff may include an arbitrary number of semantic changes. We are interested in finding the most important change within an ASTDiff and encoding that change in our datapoints. Sections ? and ? provide a detailed explanation of how we select the most important semantic information, which then helped us to obtain clusters that contained similar datapoints. 
+An ASTDiff may include an arbitrary number of semantic changes. We are interested in finding the most important change within an ASTDiff and encoding that change in our datapoints. Sections \ref{sec:path_extraction} and \ref{sec:weighting_scheme} provide a detailed explanation of how we select the most important semantic information, which then helped us to obtain clusters that contained similar datapoints. 
 
-We used Pydriller, which is a repository miner for Python. Our target repositories were the top 18 most starred open source Rust projects on GitHub. We mined all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm on the obtained datapoints. In Section ? we discuss why we chose DBSCAN for clustering and how we tuned it to improve clusters quality. 
+We used Pydriller, which is a repository miner for Python. Our target repositories were the top 18 most starred open source Rust projects on GitHub. We mined all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm on the obtained datapoints. In Section \ref{sec:clustering_data} we discuss why we chose DBSCAN for clustering and how we tuned it to improve clusters quality. 
 
-\subsection{Data modelling}
+\subsection{\label{sec:data_modelling}Data modelling}
 
-\subsubsection{Parsing Programs}
+\subsubsection{\label{sec:parsing_programs}Parsing Programs}
 
 As mentioned above, we use Syn for parsing Rust. Syn handles all of Rust. Syn's nonterminals are primarily divided and implemented through two groups: Structs and Enums, which can be found on Syn webpage. The union of the item described in these two groups constitutes the list of our non terminals (\verb+NT+). The dimensions of our datapoints have been partly designed in a way that they adhere to the elements of \verb+NT+. The other part of our dimenstions is comprised of BC-related lexemes (\verb+BCL+), e.g. clone, Rc, Box, etc. The full list of \verb+BCL+ elements can be found within our artifact. We define dimension items as \verb+DI = NT+ $\cup$ \verb+BCL+, as this set also equals the columns of our tables.
 
@@ -27,7 +27,7 @@ dictdiff tool provides modifications' types:
 dictdiff also determines the context within which the modification has occured. This context happens to be the root elements in our file, e.g. function blocks, struct blocks, impl blocks, etc. The modified content within a context is still in the form of tree. Our objective right now is to find primary elements in our diff that describe the semantics of occurred change.
 % TODO rework the above paragraph
 
-\subsubsection{Path Extraction}
+\subsubsection{\label{sec:path_extraction}Path Extraction}
 
 \begin{figure}[h]
 \centering
@@ -46,14 +46,14 @@ The next question is how to transform these paths to a fixed size datapoint. Fir
 
 In our methodology, we propose a novel method. Similar to the first approach, we define the columns of our dataset, as the set of dimension items we collected from Syn. However, to achieve an acceptable level of order-sensitiveness, we carried out two auxiliary steps. First, we record the number of occurrences of dimension items within the paths at each scope. The reason behind this decision is because a different order of program elements yields a different number of occurrences of underlying dimension items. Second, we semi-automatically design a weighting scheme to prioritize non terminals that we think are more salient for Rust bugs.
 
-\subsubsection{Weighting Scheme}
+\subsubsection{\label{sec:weighting_scheme}Weighting Scheme}
 
 Our main objective is that our datapoints manifest the change with high level of precision. For instance, the purple (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description offers the most accurate description. The whole idea behind our weighting scheme is to be able to identify the change accurately. 
 
 % I need to reread this key paragraph. - PL
 A simple heuristic is that, the closer we get to the leaves in the ASTDiff, the more important dimension items get. Another observation is that the elements closer to the root tend to be repeated in all the paths within one ASTDiff (e.g. ItemFn, Local, ExprCall in Figure~\ref{fig:extraction}). Exploiting the latter observation, to obtain a basic knowledge about the number of repetitions of dimension items, we mined the last 20 bug related commits of the last 20 most starred rust projects on GitHub, and ran them through of pipeline. We recorded the number of occurrences of each dimension item in total. Then we gave the value of the inverse of the number of occurrences to each token. The intuition is that the higher the number of occurrences of a dimension item, the closer it is usually seen to the root. Hence, it probably does not provide us with the most accurate description of the change. In addition to that, as we wanted to make sure that our tool captures the patterns related to borrow checker, we manually raised the weights of the dimension items related to borrow checker. That is why we characterize our weighting scheme as semi-automatically designed. 
 
-\subsection{Mining Repositories}
+\subsection{\label{sec:mining_repositories}Mining Repositories}
 
 \begin{figure}[h]
 \centering
@@ -96,7 +96,7 @@ Next, we collect a pair of revision per each Rust file. The pair includes the st
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Clustering Data}
+\subsection{\label{sec:clustering_data}Clustering Data}
 
 We use DBSCAN clustering algorithm for two main reasons. Firstly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters as opposed to centroid-based methods, like k-means. Secondly, also in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm.
 
@@ -111,11 +111,11 @@ There are two parameters that need tuning in DBSCAN. First parameter is $\epsilo
 
 As a general rule, a lower value for $Z$ would allow more group of close points to be considered as clusters, resulting in a higher number of clusters. A large value for $\epsilon$ would widen the search radius, allowing more points to fall in the clusters which results in a reduction of the number of noise points. That possibly can put points that do not completely manifest same patterns inside a cluster, resulting in a ineffective clustering. Alternatively, a small value for $\epsilon$ would tighten the ring of search, possibly separating clusters which essentially manifest same code changes. Also if $\epsilon$ is really small, the clustering algorithm might not detect some clusters at all, resulting in a reduction of the number of clusters. 
 
-\subsubsection{Manual Analysis for parameter tuning}
+\subsubsection{\label{sec:manual_analysis_parameter_tuning}Manual Analysis for parameter tuning}
 
 That is why, we carried out a manual analysis of clusters. In the manual analysis we randomly pick 50 clusters and from each cluster we randomly choose 10 datapoints. The analyzer then looks at the code and specify the clusters that contained more than five datapoints showing similar patterns. Through the manual analysis we specified that $\epsilon=0.0001, Z=5$ and $\epsilon=0.001, Z=5$ acted as the best parameters for $D_g$ and $D_b$, resulting in 596 and 61 clusters, respectively. As the final step, we exclude the clusters that contained datapoints from less than 3 projects. That is because, we wanted our clusters to contain cross-project patterns as much as possible.  
 
-\subsubsection{Manual Analysis for cluster selection}
+\subsubsection{\label{sec:manual_analysis_cluster_selection}Manual Analysis for cluster selection}
 % 3 types, refactoring dropped
 
 Similar to ..., following Cotroneo et al. definitions, we divide the clusters in three different groups:
@@ -130,7 +130,7 @@ Similar to ..., following Cotroneo et al. definitions, we divide the clusters in
 
 In this work, we were only interested in the first two group and disregarded the the clusters that manifest a refactoring change. Also, we prefer reporting clusters that manifest concrete patterns. An abstract pattern as opposed to a concrete pattern can account for many changes in the programs. For instance, the pattern `Adding a new statement to a function's body' is deemed more abstract than `Changing a clone of a variable to a borrowing of it in a function argument'.
 
-In our manual analysis, we randomly picked 50 datapoints of each cluster. If the cluster had less than 50 datapoints, we would analyze all of the datapoints in the cluster. Next, we read the code and also the bug report related to all the datapoints (if existed). In case that a similar pattern was detected over the instances of a cluster, we would write a natural language description of that cluster. After providing all the descriptions, we linked similar clusters together as possible candidates for merging. At last, after accomplishing re-examination for merge possibilities, we selected 19 clusters that manifested concrete changes. We discuss about our findings in Section \ref{}.
+In our manual analysis, we randomly picked 50 datapoints of each cluster. If the cluster had less than 50 datapoints, we would analyze all of the datapoints in the cluster. Next, we read the code and also the bug report related to all the datapoints (if existed). In case that a similar pattern was detected over the instances of a cluster, we would write a natural language description of that cluster. After providing all the descriptions, we linked similar clusters together as possible candidates for merging. At last, after accomplishing re-examination for merge possibilities, we selected 19 clusters that manifested concrete changes. We discuss about our findings in Section \ref{sec:common_patterns} and \ref{sec:bc_patterns}.
 
 
 

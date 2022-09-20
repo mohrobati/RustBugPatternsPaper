@@ -12,15 +12,15 @@ We choose 50 random samples from each of our general and borrow-checker database
 
 We carried out two manual experiments for evaluating our encoding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carry out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its encoding correctness. The final results are TBD\% and TBD\% correctness in the first and second experiments, respectively, which shows the effectiveness of our encoding mechanism.
 
-\subsection{Common Bug Fix Patterns (RQ2)}
+\subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
 \subsection{Attributes}
 
 Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. \\
 
-\noindent \textit{ \textbf{G.attr.struct.} Modifying the attributes of structs}
+\noindent \textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 // G.attr.struct.add: Adding attributes to a struct
 ++ #[derive(Debug, Clone)]
 pub struct Call {
@@ -41,11 +41,11 @@ pub struct Call {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways; (G1.1) Adding attributes to the struct, (G1.2) Removing attributes from the struct, (G1.3) Changing the content of an existing attribute. The attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways; (G.attr.struct.add) Adding attributes to the struct, (G.attr.struct.drop) Removing attributes from the struct, (G.attr.struct.change) Changing the content of an existing attribute. The attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
 
 \noindent \textit{ \textbf{G.attr.struct.field} Modifying the attributes of struct fields}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 // G.attr.struct.field.add: Adding attributes to struct fields
 #[derive(Serialize)]
 pub struct Retain {
@@ -69,12 +69,12 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. As with G1, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
 
 \subsection{Struct} 
 \noindent \textit{ \textbf{G.struct.field} Adding/Removing a struct field}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 // G.struct.field.add: Adding a new field to a struct
 struct InnerListeners {
     pending: Mutex<Vec<Pending>>,
@@ -92,7 +92,7 @@ struct SnapshotService<U, R> {
 
 \noindent \textit{ \textbf{G.struct.field.pub} Modifying the access modifiers of struct fields}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 
 // G.struct.field.pub.add: Adding pub to a field
 pub struct HtmlBlock {
@@ -117,7 +117,7 @@ pub struct Languages {
 
 \noindent \textit{ \textbf{G.option} Changing field type T to T$\langle$Option$\rangle$}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 
 #[ast_node("MediaRule")]
 pub struct MediaRule {
@@ -137,9 +137,9 @@ For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript 
 \subsection{Types}
 \vspace{3mm}
 
-\noindent \textit{ \textbf{G.type.field} Changing a struct field type}
+\noindent \textit{\label{sec:G.type.field}\textbf{G.type.field} Changing a struct field type}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 pub struct Manifest {
   -- pub features: Vec<String>,
   ++ pub features: HashSet<String>,
@@ -152,7 +152,7 @@ pub struct Manifest {
 
 \noindent \textit{ \textbf{G.type.generic} Changing a generic type}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Anchor {
     -- point: Point<usize>,
@@ -162,11 +162,11 @@ pub struct Anchor {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} This a change of the generic (parametric) type of a struct field. Similar to G7, this change can also happen for the mentioned reasons. \\
+\noindent \textbf{Description:} This a change of the generic (parametric) type of a struct field. Similar to \textit{\textbf{G.type.field}}, this change can also happen for the mentioned reasons. \\
 
 \noindent \textit{ \textbf{G.type.enum.variant} Change in enum variant value type}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedDependency {
   Resolved(ModuleSpecifier),
@@ -181,7 +181,7 @@ pub enum ResolvedDependency {
 
 \noindent \textit{ \textbf{G.type.tuple} Changing the type inside a tuple}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 #[allow(dead_code)]
 pub struct CoreState {
     // Other fields
@@ -198,7 +198,7 @@ pub struct CoreState {
 \subsection{Traits}
 \noindent \textit{ \textbf{G.trait.bound} TraitBound Change}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 -- pub struct EventLoop<T: tty::EventedReadWrite> {
 ++ pub struct EventLoop<T: tty::EventedPty> {
     poll: mio::Poll,
@@ -209,13 +209,13 @@ pub struct CoreState {
 
 \noindent \textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern related to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
 
-\subsection{BC-Related Bug Fix Patterns (RQ3)}
+\subsection{\label{sec:bc_patterns}BC-Related Bug Fix Patterns (RQ3)}
 
 \subsubsection{Clone}
 
 \noindent \textit{ \textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 -- let field_id = schema.get_or_create(attribute.clone())?;
 ++ let field_id = schema.get_or_create(&attribute)?;
 \end{lstlisting}
@@ -226,7 +226,7 @@ Similar to the previous pattern, this does not change the program behaviour and 
 
 \noindent \textit{ \textbf{BC.clone.drop} Removing clone}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 start_plugin_process(
 --  manifest.clone(),
 ++  manifest,
@@ -241,7 +241,7 @@ start_plugin_process(
 
 \noindent \textit{ \textbf{BC.ref.add} Adding Borrowing}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 let repo = replace(&mut *contents, Processing).inner_repo();
 -- let statuses = repo_to_statuses(repo, &self.workdir);
 ++ let statuses = repo_to_statuses(&repo, &self.workdir);
@@ -253,7 +253,7 @@ To give an example, in starship/starship after one of the commits \footnote{\url
 
 \noindent \textit{ \textbf{BC.ref.drop} Removing Borrowing}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 enums.iter().for_each(|e| {
     let mut enum_template = EnumTemplate::new();
     -- enum_template.set_message_enum(&e);
@@ -267,7 +267,7 @@ enums.iter().for_each(|e| {
 
 \noindent \textit{ \textbf{BC.deref.to\_string()} Modification in dereferencing a string prior to calling to\_string()}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 for p in wixobjs {
 --  args.push(p.to_string());
 ++  args.push((*p).to_string());
@@ -289,7 +289,7 @@ let displayed_attributes = schema.clone().map(|s| {
 
 \noindent \textit{ \textbf{BC.mut.add} Adding mutability}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 parser::Parser::new(args)
         .parse_module()
 --      .map_err(|e| {
@@ -303,7 +303,7 @@ parser::Parser::new(args)
 
 \noindent \textit{ \textbf{BC.mut.drop} Dropping mutability}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 -- let mut tx = tx.clone();
 ++ let tx = tx.clone();
 \end{lstlisting}
@@ -314,7 +314,7 @@ parser::Parser::new(args)
 
 \noindent \textit{ \textbf{BC.vec.slice} Changing a Vec reference to Slice}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 pub fn expand_delimited_square(
 --  children: &Vec<TokenNode>,
 ++  children: &[TokenNode],
@@ -327,7 +327,7 @@ pub fn expand_delimited_square(
 \subsubsection{Lifetime}
 \noindent \textit{ \textbf{BC.lifetime.static.drop} Dropping static lifetime}
 
-\begin{lstlisting}[language=Rust, style=colouredRust, label={l3}]
+\begin{lstlisting}[language=Rust, style=colouredRust]
 -- const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
 ++ const QUEUE_SIZES: &[u16] = &[QUEUE_SIZE];
 
