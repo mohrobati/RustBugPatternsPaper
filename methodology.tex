@@ -14,9 +14,6 @@ We used Pydriller, which is a repository miner for Python. Our target repositori
 
 \subsubsection{Parsing Programs}
 
-% TODO: tokens are not non terminals
-% what do you mean about structs and enums?
-% try to remove redundant content with respect to what is above
 As mentioned above, we use Syn for parsing Rust. Syn handles all of Rust. Syn's nonterminals are primarily divided and implemented through two groups: Structs and Enums, which can be found on Syn webpage. The union of the item described in these two groups constitutes the list of our non terminals (\verb+NT+). The dimensions of our datapoints have been partly designed in a way that they adhere to the elements of \verb+NT+. The other part of our dimenstions is comprised of BC-related lexemes (\verb+BCL+), e.g. clone, Rc, Box, etc. The full list of \verb+BCL+ elements can be found within our artifact. We define dimension items as \verb+DI = NT+ $\cup$ \verb+BCL+, as this set also equals the columns of our tables.
 
 We parse two versions of a Rust changed file in a commit; the file before the commit and after it. We will obtain two trees created by Syn. The change that transforms the first tree to the second one yields the fix which was applied in the commit. To find this difference, we use dictdiff, a Python library to find the diff of two Python dictionaries. Using the PLY tool (a Python implementation of lex and yacc), we wrote a simple transformer from the Rust AST into Python dictionaries. After obtaining the syntax trees in Python dictionary format, we can use dictdiff to determine the ASTDiff. 
@@ -61,18 +58,17 @@ A simple heuristic is that, the closer we get to the leaves in the ASTDiff, the 
 \begin{figure}[h]
 \centering
 \includegraphics[width=1\textwidth]{repos.png}
-\label{f3}
-\caption{Target Repositories}
+\caption{\label{table:repos} Target Repositories}
 \end{figure}
 
-Now that we have set up our code analysis pipeline, we can start mining the Rust repositories. We target the top 18 most starred Rust projects on GitHub, at the time of data collection. The details of these projects are outlined in Table \ref{f3}. We computed the average code churn of the files within the projects. denoland/deno and swc-project/swc are the projects with largest number of LOCs and average code churn. Unsurprisingly, we captured a lot of instances from these two projects in our final clusters.
+Now that we have set up our code analysis pipeline, we can start mining the Rust repositories. We target the top 18 most starred Rust projects on GitHub, at the time of data collection. The details of these projects are outlined in Table \ref{table:repos}. We computed the average code churn of the files within the projects. denoland/deno and swc-project/swc are the projects with largest number of LOCs and average code churn. Unsurprisingly, we captured a lot of instances from these two projects in our final clusters.
 
 We use Pydriller, a Python library for mining software repositories. Pydriller provides APIs to extract commits from a Git repository, and search through different revisions of files. Algorithm \ref{alg} shows how we leveraged Pydriller to run the target repositories through our code analysis pipeline, and populate two databases; one for general patterns and one for borrow-checker related patterns. The borrow-checker related patterns are the changes that include certain keywords (e.g. clone, Box, etc. Full list can be found in our artifact). For each repository, we search through all the commits that include bug fixing related keywords within their commit messages. These keyword for the scope of our project are `bug', `error', `fault', `defect', and `fix'. 
 
 Next, we collect a pair of revision per each Rust file. The pair includes the state of the file before commit and after commit ($f_a, f_b$). After parsing each revision and computing the ASTDiff, we can obtain the fixed sized datapoint $DP$. If the datapoint contains borrow-checker related keywords, we would put that inside the BC-related code changes table ($D_b$), otherwise we would put it in the general code changes table ($D_g$). In both cases, we augment the datapoint with the commit hash, filename, and the scope in which the change has happened. In case of BC-related code changes, we also store detected BC-related keyword. Now our tables are ready for clustering and categorization.
 
 \begin{algorithm}
-\caption{An algorithm with caption}\label{alg}
+\caption{\label{alg} Mining Algorithm}
 \hspace*{2mm} \textbf{Input:} $R$ (target repositories)  \\
 \hspace*{2mm} \textbf{Output:} $D_g$ (General code changes) \\
 \hspace*{2mm} \textbf{Output:} $D_b$ (BC-related code changes)
@@ -104,14 +100,13 @@ Next, we collect a pair of revision per each Rust file. The pair includes the st
 
 We use DBSCAN clustering algorithm for two main reasons. Firstly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters as opposed to centroid-based methods, like k-means. Secondly, also in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm.
 
-There are two parameters that need tuning in DBSCAN. First parameter is $\epsilon$ which indicates a radius with which you can decide whether a point is a core point, a border point, or an outlier. Second parameter is the minimum number of point you would like each cluster to have. We denote his parameter with $Z$. We ran DBSCAN using different combinations of these two parameters. In Figure \ref{clustering}, we show nine different experiments with their respective parameter values. Within each subplot, the number of clustered points, noise points, and the number of clusters have been specified both for $D_g$ and $D_b$. 
+There are two parameters that need tuning in DBSCAN. First parameter is $\epsilon$ which indicates a radius with which you can decide whether a point is a core point, a border point, or an outlier. Second parameter is the minimum number of point you would like each cluster to have. We denote his parameter with $Z$. We ran DBSCAN using different combinations of these two parameters. In Figure \ref{fig:clustering}, we show nine different experiments with their respective parameter values. Within each subplot, the number of clustered points, noise points, and the number of clusters have been specified both for $D_g$ and $D_b$. 
 
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=1\textwidth]{clusters.png}
-\label{clustering}
-\caption{Clustering Experiments}
+\caption{\label{fig:clustering} Clustering Experiments}
 \end{figure}
 
 As a general rule, a lower value for $Z$ would allow more group of close points to be considered as clusters, resulting in a higher number of clusters. A large value for $\epsilon$ would widen the search radius, allowing more points to fall in the clusters which results in a reduction of the number of noise points. That possibly can put points that do not completely manifest same patterns inside a cluster, resulting in a ineffective clustering. Alternatively, a small value for $\epsilon$ would tighten the ring of search, possibly separating clusters which essentially manifest same code changes. Also if $\epsilon$ is really small, the clustering algorithm might not detect some clusters at all, resulting in a reduction of the number of clusters. 
