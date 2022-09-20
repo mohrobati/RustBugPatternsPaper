@@ -1,20 +1,13 @@
-% why fixed-size?
-% or are you saying that everyone does this, and then in the next paragraph, say that we do this too
-% The reason is that both distance-based and density-based clustering algorithms work with fixed size datapoints.
-The general idea for automatically finding the pervasive code patterns within a list of programs is to parse the programs and encode the important parts of the derived AST in fixed sized datapoints. Then, one uses a clustering algorithms to cluster these datapoints. Work in this vein makes the assumption that each cluster corresponds to one change pattern.
+The general idea for automatically finding the pervasive code patterns within a list of programs is to parse the programs and encode the important parts of the derived AST in fixed-size datapoints. We need fixed-size datapoints, as it is a requirement for both centroid-based and density-based well-known clustering algorithms. Work in this vein makes the assumption that each cluster corresponds to one change pattern.
 
-% put a footnote with the URL for Syn
-% which APIs can't be used generally?
-Our pipeline for finding pervasive patterns in Rust programs also follows this idea. We decided to implement our pipeline completely in Python. To make this work, we need a way to get an AST as a Python dictionary. Syn is a Rust crate which is designed to be employed in Rust procedural macros. However, it includes a parser which is suitable for our purposes; we simply had to write a preprocessor to transform Syn AST output into Python dictionaries.
+Our pipeline for finding pervasive patterns in Rust programs also follows this idea. We decided to implement our pipeline completely in Python. To make this work, we need a way to get an AST as a Python dictionary. Syn \footnote{\url{https://crates.io/crates/syn}} is a Rust crate which is designed to be employed in Rust procedural macros. However, it includes a parser which is suitable for our purposes; we simply had to write a preprocessor to transform Syn AST output into Python dictionaries.
 
+% TODO Define change
 A change pattern categorizes a class of changes. We thus need to define what a change is. For our purposes, a change is ....
-To compute the contents of a change, we need two code revisions: the revision before the commit, and the revision after it. After parsing these two revisions, we will have two ASTs, encoded in two Python dictionaries. The change in the code can be computed by analyzing the difference of these two trees, which we call the ASTDiff. To derive the ASTDiff we use dictdiff Python library. 
-% the wording in the two last sentences is inexact. Let's try to make clear exactly what the steps are, and use the right verbs.
+To compute the contents of a change, we need two code revisions: the revision before the commit, and the revision after it. After parsing these two revisions, we will have two ASTs, encoded in two Python dictionaries. A tree diff algorithm would specify the differences between two arbitrary trees. If the trees are abstracts syntax trees of programs, we simply call it an ASTDiff. We use dictdiff to obtain ASTDiffs.
 
-An ASTDiff may include an arbitrary number of semantic changes. We are interested in finding the most important change within an ASTDiff and encoding that change in our datapoints. Sections ? and ? provide a detailed explanation of how we select the most important semantic information, which then helped us to effectively obtain meaningful clusters. % justification of that last assertion about meaningful clusters? e.g. we found that this helped us to effectively obtain meaningful clusters; but maybe we just don't know.
+An ASTDiff may include an arbitrary number of semantic changes. We are interested in finding the most important change within an ASTDiff and encoding that change in our datapoints. Sections ? and ? provide a detailed explanation of how we select the most important semantic information, which then helped us to obtain clusters that contained similar datapoints. 
 
-% why do we use pydriller?
-% section N explains how we found the bug-related commits
 We used Pydriller, which is a repository miner for Python. Our target repositories were the top 18 most starred open source Rust projects on GitHub. We mined all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm on the obtained datapoints. In Section ? we discuss why we chose DBSCAN for clustering and how we tuned it to improve clusters quality. 
 
 \subsection{Data modelling}
@@ -24,9 +17,9 @@ We used Pydriller, which is a repository miner for Python. Our target repositori
 % TODO: tokens are not non terminals
 % what do you mean about structs and enums?
 % try to remove redundant content with respect to what is above
-As mentioned above, we use Syn for parsing Rust. Syn handles all of Rust. Syn's nonterminals are primarily divided into two main groups; Structs and Enums. The dimensions of our datapoints have been designed in a way that it adheres to the nonterminals described in these two groups. We parse two versions of a Rust changed file in a commit; the file before the commit and after it. We will obtain two trees created by Syn. The change that transforms the first tree to the second one yields the fix which was applied in the commit. 
+As mentioned above, we use Syn for parsing Rust. Syn handles all of Rust. Syn's nonterminals are primarily divided and implemented through two groups: Structs and Enums, which can be found on Syn webpage. The union of the item described in these two groups constitutes the list of our non terminals (\verb+NT+). The dimensions of our datapoints have been partly designed in a way that they adhere to the elements of \verb+NT+. The other part of our dimenstions is comprised of BC-related lexemes (\verb+BCL+), e.g. clone, Rc, Box, etc. The full list of \verb+BCL+ elements can be found within our artifact. We define dimension items as \verb+DI = NT+ $\cup$ \verb+BCL+, as this set also equals the columns of our tables.
 
-To find this difference, we use dictdiff, a Python library to find the diff of two Python dictionaries. Using the PLY tool (a Python implementation of lex and yacc), we wrote a simple transformer from the Rust AST into Python dictionaries. After obtaining the syntax trees in Python dictionary format, we can use dictdiff to determine the ASTDiff. 
+We parse two versions of a Rust changed file in a commit; the file before the commit and after it. We will obtain two trees created by Syn. The change that transforms the first tree to the second one yields the fix which was applied in the commit. To find this difference, we use dictdiff, a Python library to find the diff of two Python dictionaries. Using the PLY tool (a Python implementation of lex and yacc), we wrote a simple transformer from the Rust AST into Python dictionaries. After obtaining the syntax trees in Python dictionary format, we can use dictdiff to determine the ASTDiff. 
 
 dictdiff tool provides modifications' types: 
 \begin{itemize}
@@ -34,47 +27,34 @@ dictdiff tool provides modifications' types:
 \item `remove': A structure has been dropped from the tree; 
 \item `change': The content of a sub structure of the first tree has changed.
 \end{itemize}
-dictdiff also determines the context within which the modification has occured. This context happens to be the root elements (FIND A BETTER TERM FOR ROOT ELEMENTS) in our file, e.g. function blocks, struct blocks, impl blocks, etc. The modified content within a context is still in the form of tree. Our objective right now is to find primary elements in our diff that describe the semantics of occurred change.
-% rework the above paragraph
+dictdiff also determines the context within which the modification has occured. This context happens to be the root elements in our file, e.g. function blocks, struct blocks, impl blocks, etc. The modified content within a context is still in the form of tree. Our objective right now is to find primary elements in our diff that describe the semantics of occurred change.
+% TODO rework the above paragraph
 
 \subsubsection{Path Extraction}
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.8\textwidth]{linearization.png}
+\includegraphics[width=0.8\textwidth]{extraction.png}
 \caption{\label{fig:extraction}Path Extraction}
 \end{figure}
 
-% again try to remove redundancy
-The output of dictdiff is a list of diffs, where each diff comprises three parts. The first part specifies whether the modification is of type 'add', 'remove', 'change'. The second part identifies the context of the modification, that is, the path from the root of the tree to the subtree in which the modification has occured. The third part is the content of the change (terminals and nonterminals). Our tool looks for changes within each root-level scope. That is, our assumption is that a change pattern occurs within one root-level scope. In this work, we chose to not handle patterns that involve changes in multiple functions or multiple files. However, if the change happens in multiple lines within one scope, whether they are continuously one after another or separate from each other, our tool would be able to detect it.
-% simplify that last sentence there
-% provide an example and then transform it into fig:extraction.
+The output of dictdiff is a list of diffs, where each diff comprises three parts. The first part specifies whether the modification is of type 'add', 'remove', 'change'. The second part identifies the context of the modification, that is, the path from the root of the tree to the subtree in which the modification has occured. The third part is the content of the change (terminals and nonterminals). Our tool looks for changes within each root-level scope. That is, our assumption is that a change pattern occurs within one root-level scope. In this work, we chose to not handle patterns that involve changes in multiple functions or multiple files. However, our tool would detect both continuous and non-continuous line changes within one scope.
+% TODO provide an example and then transform it into fig:extraction. 
 
-% what is the Syn token types list?
-Looking at the tree encoded in the content part of each diff, we realized that each path to a leaf represents one contributing element to the change. Through a Depth First Search we can collect all of these paths. We store only the non terminals that exist in the Syn token types list. Also certain keywords are not considered as non terminals in the syntax tree (e.g. clone, Box), but as they have a special meaning the language, we also store them in the path. The outcome of the DFS search is a set of paths.
+Looking at the tree encoded in the content part of each diff, we realized that each path to a leaf represents one contributing element to the change. Through a Depth First Search we can collect all of these paths. We store only the nodes that exist in the \verb+DI+. The outcome of the DFS search is a set of paths.
 
-% reorganize this when you put the example up there.
-Figure~\ref{fig:extraction} shows a simple change and its respective paths. The change replaces \verb+tail+ with \verb+&tail+ and \verb+head+ with \verb+head.clone()+. That is, after the change, the second argument passes a borrow of \verb+tail+ rather than sending the ownership of \verb+tail+ to the callee; and, in the third argument, instead of sending \verb+head+ to the callee, it sends a clone of it. A DFS search on this tree would yield three different paths, which we show in red, green, and purple. The path represents the sequence of involved non terminals, which represents one contributing factor to the change (along with the context, which we do not record). We found it crucial to record the order of all non terminals involved in a path as it gives us freedom to control the degree of order-sensitiveness in our datapoint encoding.
-% can use fewer words in that last sentence too
+Figure~\ref{fig:extraction} shows a simple change and its respective paths. The change replaces \verb+tail+ with \verb+&tail+ and \verb+head+ with \verb+head.clone()+. That is, after the change, the second argument passes a borrow of \verb+tail+ rather than sending the ownership of \verb+tail+ to the callee; and, in the third argument, instead of sending \verb+head+ to the callee, it sends a clone of it. A DFS search on this tree would yield three different paths, which we show in red, green, and purple. The path represents the sequence of involved non terminals, which represents one contributing factor to the change. We found it crucial to record the order of all path nodes as it gives us freedom to control the order-sensitiveness in our datapoint encoding.
 
-% OK so if you just have all observed nonterminals then you have a fixed size, but it's too big.
-The next question is how to transform these paths to a fixed size datapoint. First, we need to define a fixed set of columns. The number of columns would depend on the amount of information we want to encode in the datapoints. The most naive approach would be to only report the observed non terminals within the diff. That yields a fully order-insensitive representation. In such an encoding, for instance, there is no difference between two nested if statements and two if statements beside each other. Theoretically, to reach full order-sensitiveness, we would need encode all possible combinations of token types as our dimensions, which yields an astronomical number of dimensions. Apart from that, not all combinations adhere to Rust syntax. A reasonable work around would be to reduce from the full set of nonterminals to a smaller set of categories, and then to set the dimension as all possible combinations of these categories (Similar to JS paper, ref). This would reduce the number of dimensions and provide more reasonable and syntactically-correct combinations. However, this would still yield a sparse dataset. 
-% give examples of categories
-% can we provide orders of magnitude rather than "astronomical"?
+The next question is how to transform these paths to a fixed size datapoint. First, we need to define a fixed set of columns. The number of columns would depend on the amount of information we want to encode in the datapoints. The most naive approach would be to only report the observed non terminals within the diff. That yields a fully order-insensitive representation. In such an encoding, for instance, there is no difference between two nested if statements and two if statements beside each other. Theoretically, to reach full order-sensitiveness, we would need encode all possible combinations of dimension items as our dimensions, which yields a large number (A loose upper bound would be $n^n$ where $n$ is the number of dimension items). Apart from that, not all combinations adhere to Rust syntax. A reasonable work around would be to reduce from the full set of nonterminals to a smaller set of categories (e.g. A category for larger entites like class or function definitions, and a category for smaller entities like statements and expressions), and then to set the dimension as all possible combinations of these categories (Similar to JS paper, ref). This would reduce the number of dimensions and provide more reasonable and syntactically-correct combinations. However, this would still yield a sparse dataset. 
 
-% We make a novel contribution here. 
-In our methodology, similar to the first approach, we define the columns of our dataset, as the set of token types we collected from Syn. However, to achieve an acceptable level of order-sensitiveness, we carried out two auxiliary steps. First, we record the number of occurrences of token types within the paths at each scope. The reason behind this decision is because a different order of program elements yields a different number of occurrences of underlying token types. Second, we semi-automatically design a weighting scheme to prioritize non terminals that we think are more salient for Rust bugs.
+In our methodology, we propose a novel method. Similar to the first approach, we define the columns of our dataset, as the set of dimension items we collected from Syn. However, to achieve an acceptable level of order-sensitiveness, we carried out two auxiliary steps. First, we record the number of occurrences of dimension items within the paths at each scope. The reason behind this decision is because a different order of program elements yields a different number of occurrences of underlying dimension items. Second, we semi-automatically design a weighting scheme to prioritize non terminals that we think are more salient for Rust bugs.
 
 \subsubsection{Weighting Scheme}
 
-% consider: "datapoints accurately describe the most important change." 
-% put the most important change first
 Our main objective is that our datapoints manifest the change with high level of precision. For instance, the purple (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description offers the most accurate description. The whole idea behind our weighting scheme is to be able to identify the change accurately. 
 
 % I need to reread this key paragraph. - PL
-A simple heuristic is that, the closer we get to the leaves in the ASTDiff, the more important token types get. Another observation is that the elements closer to the root tend to be repeated in all the paths within one ASTDiff (e.g. ItemFn, Local, ExprCall in Figure~\ref{fig:extraction}). Exploiting the latter observation, to obtain a basic knowledge about the number of repetitions of token types, we mined the last 20 bug related commits of the last 20 most starred rust projects on GitHub, and ran them through of pipeline. We recorded the number of occurrences of each token type in total. Then we gave the value of the inverse of the number of occurrences to each token. The intuition is that the higher the number of occurrences of a token type, the closer it is usually seen to the root. Hence, it probably does not provide us with the most accurate description of the change. In addition to that, as we wanted to make sure that our tool captures the patterns related to borrow checker, we manually raised the weights of the token types related to borrow checker. That is why we characterize our weighting scheme as semi-automatically designed. 
-
-At last, each datapoint is created by the multiplying the number of occurrences of each token type to its weight and placing the result under its respective column. We call the set of final values the essence of the change, as we claim the values of token types manifest their importance in the change.
+A simple heuristic is that, the closer we get to the leaves in the ASTDiff, the more important dimension items get. Another observation is that the elements closer to the root tend to be repeated in all the paths within one ASTDiff (e.g. ItemFn, Local, ExprCall in Figure~\ref{fig:extraction}). Exploiting the latter observation, to obtain a basic knowledge about the number of repetitions of dimension items, we mined the last 20 bug related commits of the last 20 most starred rust projects on GitHub, and ran them through of pipeline. We recorded the number of occurrences of each token type in total. Then we gave the value of the inverse of the number of occurrences to each token. The intuition is that the higher the number of occurrences of a token type, the closer it is usually seen to the root. Hence, it probably does not provide us with the most accurate description of the change. In addition to that, as we wanted to make sure that our tool captures the patterns related to borrow checker, we manually raised the weights of the dimension items related to borrow checker. That is why we characterize our weighting scheme as semi-automatically designed. 
 
 \subsection{Mining Repositories}
 
@@ -87,8 +67,12 @@ At last, each datapoint is created by the multiplying the number of occurrences 
 
 Now that we have set up our code analysis pipeline, we can start mining the Rust repositories. We target the top 18 most starred Rust projects on GitHub, at the time of data collection. The details of these projects are outlined in Table \ref{f3}. We computed the average code churn of the files within the projects. denoland/deno and swc-project/swc are the projects with largest number of LOCs and average code churn. Unsurprisingly, we captured a lot of instances from these two projects in our final clusters.
 
+We use Pydriller, a Python library for mining software repositories. Pydriller provides APIs to extract commits from a Git repository, and search through different revisions of files. Algorithm \ref{alg} shows how we leveraged Pydriller to run the target repositories through our code analysis pipeline, and populate two databases; one for general patterns and one for borrow-checker related patterns. The borrow-checker related patterns are the changes that include certain keywords (e.g. clone, Box, etc. Full list can be found in our artifact). For each repository, we search through all the commits that include bug fixing related keywords within their commit messages. These keyword for the scope of our project are `bug', `error', `fault', `defect', and `fix'. 
+
+Next, we collect a pair of revision per each Rust file. The pair includes the state of the file before commit and after commit ($f_a, f_b$). After parsing each revision and computing the ASTDiff, we can obtain the fixed sized datapoint $DP$. If the datapoint contains borrow-checker related keywords, we would put that inside the BC-related code changes table ($D_b$), otherwise we would put it in the general code changes table ($D_g$). In both cases, we augment the datapoint with the commit hash, filename, and the scope in which the change has happened. In case of BC-related code changes, we also store detected BC-related keyword. Now our tables are ready for clustering and categorization.
+
 \begin{algorithm}
-\caption{An algorithm with caption}\label{alg:cap}
+\caption{An algorithm with caption}\label{alg}
 \hspace*{2mm} \textbf{Input:} $R$ (target repositories)  \\
 \hspace*{2mm} \textbf{Output:} $D_g$ (General code changes) \\
 \hspace*{2mm} \textbf{Output:} $D_b$ (BC-related code changes)
@@ -116,16 +100,43 @@ Now that we have set up our code analysis pipeline, we can start mining the Rust
 \end{algorithmic}
 \end{algorithm}
 
-%% Describing algorithm
-
 \subsection{Clustering Data}
 
-%% Why DBSCAN
+We use DBSCAN clustering algorithm for two main reasons. Firstly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters as opposed to centroid-based methods, like k-means. Secondly, also in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm.
 
-%% Choosing Parameters
+There are two parameters that need tuning in DBSCAN. First parameter is $\epsilon$ which indicates a radius with which you can decide whether a point is a core point, a border point, or an outlier. Second parameter is the minimum number of point you would like each cluster to have. We denote his parameter with $Z$. We ran DBSCAN using different combinations of these two parameters. In Figure \ref{clustering}, we show nine different experiments with their respective parameter values. Within each subplot, the number of clustered points, noise points, and the number of clusters have been specified both for $D_g$ and $D_b$. 
 
-%% Figure
 
-%% Manual Analysis for finding best parameter 
+\begin{figure}[h]
+\centering
+\includegraphics[width=1\textwidth]{clusters.png}
+\label{clustering}
+\caption{Clustering Experiments}
+\end{figure}
 
-%% Final Clusters
+As a general rule, a lower value for $Z$ would allow more group of close points to be considered as clusters, resulting in a higher number of clusters. A large value for $\epsilon$ would widen the search radius, allowing more points to fall in the clusters which results in a reduction of the number of noise points. That possibly can put points that do not completely manifest same patterns inside a cluster, resulting in a ineffective clustering. Alternatively, a small value for $\epsilon$ would tighten the ring of search, possibly separating clusters which essentially manifest same code changes. Also if $\epsilon$ is really small, the clustering algorithm might not detect some clusters at all, resulting in a reduction of the number of clusters. 
+
+\subsubsection{Manual Analysis for parameter tuning}
+
+That is why, we carried out a manual analysis of clusters. In the manual analysis we randomly pick 50 clusters and from each cluster we randomly choose 10 datapoints. The analyzer then looks at the code and specify the clusters that contained more than five datapoints showing similar patterns. Through the manual analysis we specified that $\epsilon=0.0001, Z=5$ and $\epsilon=0.001, Z=5$ acted as the best parameters for $D_g$ and $D_b$, resulting in 596 and 61 clusters, respectively. As the final step, we exclude the clusters that contained datapoints from less than 3 projects. That is because, we wanted our clusters to contain cross-project patterns as much as possible.  
+
+\subsubsection{Manual Analysis for cluster selection}
+% 3 types, refactoring dropped
+
+Similar to ..., following Cotroneo et al. definitions, we divide the clusters in three different groups:
+
+\begin{itemize}
+    \item bug-fix: "The changed code actually fixes the behavior of software, which can represent fixes for a bug type". We consider the changes that improve program performance as instance of this group, as they fix the behavior of software.
+    
+    \item fix-induced: "The changed code is a group of bug-fixing code changes but not represents an actual bug fix, e.g., adding new input parameters to a method, the method signature and method call must be changed corresponding".
+    
+    \item refactoring: "the changed code does not modify the software behavior, e.g., better readability or encapsulation".
+\end{itemize}
+
+In this work, we were only interested in the first two group and disregarded the the clusters that manifest a refactoring change. Also, we prefer reporting clusters that manifest concrete patterns. An abstract pattern as opposed to a concrete pattern can account for many changes in the programs. For instance, the pattern `Adding a new statement to a function's body' is deemed more abstract than `Changing a clone of a variable to a borrowing of it in a function argument'.
+
+In our manual analysis, we randomly picked 50 datapoints of each cluster. If the cluster had less than 50 datapoints, we would analyze all of the datapoints in the cluster. Next, we read the code and also the bug report related to all the datapoints (if existed). In case that a similar pattern was detected over the instances of a cluster, we would write a natural language description of that cluster. After providing all the descriptions, we linked similar clusters together as possible candidates for merging. At last, after accomplishing re-examination for merge possibilities, we selected 19 clusters that manifested concrete changes. We discuss about our findings in Section \ref{}.
+
+
+
+
