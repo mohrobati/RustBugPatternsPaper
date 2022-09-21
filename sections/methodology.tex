@@ -9,7 +9,7 @@ To compute the contents of a change, we need two code revisions: the revision be
 
 An ASTDiff may include an arbitrary number of semantic changes, although a best practice is to include only one semantic change in a commit. Because that best practice is not universally followed, we are interested in finding the most important change within an ASTDiff, and encoding that change in our datapoints. Sections~\ref{sec:path_extraction}~and~\ref{sec:weighting_scheme} provide a detailed explanation of how we select the most important semantic information, which then allowed us to obtain clusters that contained similar datapoints. 
 
-Our target repositories were the top 18 most-starred open source Rust projects on GitHub. Using Pydriller, a repository miner for Python, we mined all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm on the resulting datapoints. In Section~\ref{sec:clustering_data} we justify our choice of DBSCAN for clustering, and how we tuned it to improve cluster quality. 
+Our target repositories were the top 18 most-starred open source Rust projects on GitHub. We mined (using Pydriller) all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm on the resulting datapoints. In Section~\ref{sec:clustering_data} we justify our choice of DBSCAN for clustering, and how we tuned it to improve cluster quality. 
 
 \subsection{\label{sec:data_modelling}Data modelling}
 
@@ -68,17 +68,19 @@ Furthermore, as we wanted to make sure that our tool captures patterns related t
 
 \subsection{\label{sec:mining_repositories}Mining Repositories}
 
-\begin{figure}[h]
+\begin{table}[h]
 \centering
-\includegraphics[width=1\textwidth]{figs/repos.png}
 \caption{\label{table:repos} Target Repositories}
-\end{figure}
+\includegraphics[width=1\textwidth]{figs/repos.png}
+\end{table}
 
-Now that we have set up our code analysis pipeline, we can start mining the Rust repositories. We target the top 18 most starred Rust projects on GitHub, at the time of data collection. The details of these projects are outlined in Table \ref{table:repos}. We computed the average code churn of the files within the projects. denoland/deno and swc-project/swc are the projects with largest number of LOCs and average code churn. Unsurprisingly, we captured a lot of instances from these two projects in our final clusters.
+% should have a reference to how you are computing churn
+Now that we have set up our code analysis pipeline, we can start mining the Rust repositories. We target the top 18 most-starred Rust projects on GitHub, at the time of data collection. Table~\ref{table:repos} summarizes our benchmarks. Because we are interested in changes, we computed the average code churn of the files within the projects. denoland/deno and swc-project/swc are the projects with largest number of LOCs and highest average code churn, respectively. Unsurprisingly, we captured a lot of instances from these two projects in our final clusters.
 
-We use Pydriller, a Python library for mining software repositories. Pydriller provides APIs to extract commits from a Git repository, and search through different revisions of files. Algorithm \ref{alg} shows how we leveraged Pydriller to run the target repositories through our code analysis pipeline, and populate two databases; one for general patterns and one for borrow-checker related patterns. The borrow-checker related patterns are the changes that include certain keywords (e.g. clone, Box, etc. Full list can be found in our artifact). For each repository, we search through all the commits that include bug fixing related keywords within their commit messages. These keyword for the scope of our project are `bug', `error', `fault', `defect', and `fix'. 
+We used the Pydriller library to mine software repositories. Pydriller provides APIs to extract commits from a Git repository and to search through different revisions of files. Algorithm~\ref{alg} shows how we used Pydriller to run the target repositories through our code analysis pipeline and populate two databases: one for borrow-checker related patterns (which involve items in \texttt{BCL}) and one for general patterns (which don't). For each repository, we search all commits that include bug-fixing related keywords within their commit messages. Here, we chose bug-fixing related keywords `bug', `error', `fault', `defect', and `fix'. 
+% cite earlier work that does the search-for-keywords-to-identify-bugs; my earlier EMSE paper has that citation for instance.
 
-Next, we collect a pair of revision per each Rust file. The pair includes the state of the file before commit and after commit ($f_a, f_b$). After parsing each revision and computing the ASTDiff, we can obtain the fixed sized datapoint $DP$. If the datapoint contains borrow-checker related keywords, we would put that inside the BC-related code changes table ($D_b$), otherwise we would put it in the general code changes table ($D_g$). In both cases, we augment the datapoint with the commit hash, filename, and the scope in which the change has happened. In case of BC-related code changes, we also store detected BC-related keyword. Now our tables are ready for clustering and categorization.
+Next, we collect a pair of revisions for each Rust file. The pair includes the state of the file before the commit and after the commit ($f_a, f_b$). After parsing each revision and computing the ASTDiff, we can compute the fixed sized datapoint $\mathit{DP}$. If the datapoint contains borrow-checker related keywords, we put it in the BC-related database $D_b$; otherwise, we put it in the general code changes database $D_g$. In both cases, we augment the datapoint with the commit hash, filename, and the scope in which the change happened. For BC-related code changes, we also store the detected BC-related keywords. Now our databases are ready for clustering and categorization.
 
 \begin{algorithm}
 \caption{\label{alg} Mining Algorithm}
@@ -93,13 +95,13 @@ Next, we collect a pair of revision per each Rust file. The pair includes the st
         \If{$c.msg$ contains bug fixing related keywords}
             \For{$\{f_b, f_a\} \in \textsc{GetModifiedRustFiles}(c)$}
                 \For{$e \in \textsc{ASTDiff}(\textsc{Parse}(f_b), \textsc{Parse}(f_a))$}
-                    \State $DP \leftarrow \textsc{GetDataPoint}(e)$
-                    \State $DP \leftarrow c.hash \cup f_a.name \cup e.scope \cup DP $
+                    \State $\textit{DP} \leftarrow \textsc{GetDataPoint}(e)$
+                    \State $\textit{DP} \leftarrow c.\textit{hash} \cup f_a.\textit{name} \cup e.\textit{scope} \cup \textit{DP} $
                     \If{$\textsc{IsBCRelated}(e)$}
-                        \State $DP \leftarrow \textsc{GetBCKeyword}(e) \cup DP $
-                        \State $D_b \leftarrow D_b \cup DP$
+                        \State $\textit{DP} \leftarrow \textsc{GetBCKeyword}(e) \cup \textit{DP} $
+                        \State $D_b \leftarrow D_b \cup \textit{DP}$
                     \Else
-                        \State $D_g \leftarrow D_g \cup DP$
+                        \State $D_g \leftarrow D_g \cup \textit{DP}$
                     \EndIf
                 \EndFor
             \EndFor
@@ -111,22 +113,22 @@ Next, we collect a pair of revision per each Rust file. The pair includes the st
 
 \subsection{\label{sec:clustering_data}Clustering Data}
 
-We use DBSCAN clustering algorithm for two main reasons. Firstly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters as opposed to centroid-based methods, like k-means. Secondly, also in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm.
+Having collected our datapoints, our next task is to cluster them so that we can categorize bug patterns. Like~\cite{JS paper, Python paper}, we use the DBSCAN clustering algorithm for two main reasons. Firstly, in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm. Secondly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters; centroid-based methods like k-means can't detect such clusters. We tried k-means and the more powerful fuzzy variant F-means and did not get useful clusters.
 
-There are two parameters that need tuning in DBSCAN. First parameter is $\epsilon$ which indicates a radius with which you can decide whether a point is a core point, a border point, or an outlier. Second parameter is the minimum number of point you would like each cluster to have. We denote his parameter with $Z$. We ran DBSCAN using different combinations of these two parameters. In Figure \ref{fig:clustering}, we show nine different experiments with their respective parameter values. Within each subplot, the number of clustered points, noise points, and the number of clusters have been specified both for $D_g$ and $D_b$. 
+DBSCAN takes two tuneable parameters. The first parameter $\epsilon$ indicates a radius within which a point is a core point, a border point, or an outlier. The second parameter $Z$ is the minimum number of points per cluster. We ran DBSCAN using different combinations of these two parameters. In Figure~\ref{fig:clustering}, we show nine different experiments, with their respective parameter values. Each subplot specifies, for both $D_g$ and $D_b$, the number of clustered points, noise points, and the number of clusters.
 
-
+% TODO fix this caption
 \begin{figure}[h]
 \centering
 \includegraphics[width=1\textwidth]{figs/clusters.png}
 \caption{\label{fig:clustering} Clustering Experiments}
 \end{figure}
 
-As a general rule, a lower value for $Z$ would allow more group of close points to be considered as clusters, resulting in a higher number of clusters. A large value for $\epsilon$ would widen the search radius, allowing more points to fall in the clusters which results in a reduction of the number of noise points. That possibly can put points that do not completely manifest same patterns inside a cluster, resulting in a ineffective clustering. Alternatively, a small value for $\epsilon$ would tighten the ring of search, possibly separating clusters which essentially manifest same code changes. Also if $\epsilon$ is really small, the clustering algorithm might not detect some clusters at all, resulting in a reduction of the number of clusters. 
+As a general rule, lower $Z$ would allow more groups of close points to be considered as clusters, resulting in a higher number of clusters. A large $\epsilon$ would widen the search radius, allowing more points to fall in the clusters, which results in a reduction of the number of noise points. Such a choice might put points from different patterns inside the same cluster, resulting in a ineffective clustering. Alternatively, a small $\epsilon$ would tighten the ring of search, possibly separating clusters which essentially manifest the same code changes. Also, if $\epsilon$ is really small, the clustering algorithm might not detect some clusters at all, resulting in a reduction of the number of clusters. 
 
 \subsubsection{\label{sec:manual_analysis_parameter_tuning}Manual Analysis for parameter tuning}
 
-That is why, we carried out a manual analysis of clusters. In the manual analysis we randomly pick 50 clusters and from each cluster we randomly choose 10 datapoints. The analyzer then looks at the code and specify the clusters that contained more than five datapoints showing similar patterns. Through the manual analysis we specified that $\epsilon=0.0001, Z=5$ and $\epsilon=0.001, Z=5$ acted as the best parameters for $D_g$ and $D_b$, resulting in 596 and 61 clusters, respectively. As the final step, we exclude the clusters that contained datapoints from less than 3 projects. That is because, we wanted our clusters to contain cross-project patterns as much as possible.  
+That is why we carried out a manual analysis of clusters. In the manual analysis, we randomly pick 50 clusters; from each, cluster we randomly choose 10 datapoints. The person analyzing the cluster then looks at the code and specifies the clusters that contained more than five datapoints showing similar patterns. For the manual analysis, we used $\epsilon=0.0001, Z=5$ and $\epsilon=0.001, Z=5$, which were the best parameters for $D_g$ and $D_b$, resulting in 596 and 61 clusters, respectively. As a final step, we exclude clusters that contained datapoints from fewer than 3 projects. That is because we wanted our clusters to contain cross-project (e.g. potentially generalizable) patterns as much as possible.  
 
 \subsubsection{\label{sec:manual_analysis_cluster_selection}Manual Analysis for cluster selection}
 % 3 types, refactoring dropped
@@ -134,17 +136,13 @@ That is why, we carried out a manual analysis of clusters. In the manual analysi
 Similar to ..., following Cotroneo et al. definitions, we divide the clusters in three different groups:
 
 \begin{itemize}
-    \item bug-fix: "The changed code actually fixes the behavior of software, which can represent fixes for a bug type". We consider the changes that improve program performance as instance of this group, as they fix the behavior of software.
+    \item bug-fix: ``The changed code actually fixes the behavior of software, which can represent fixes for a bug type''. We include here changes that improve program performance, as they fix the behaviour of the software.
     
-    \item fix-induced: "The changed code is a group of bug-fixing code changes but not represents an actual bug fix, e.g., adding new input parameters to a method, the method signature and method call must be changed corresponding".
+    \item fix-induced: ``The changed code is a group of bug-fixing code changes but not representing an actual bug fix, e.g., adding new input parameters to a method, the method signature and method call must be changed correspondingly''.
     
-    \item refactoring: "the changed code does not modify the software behavior, e.g., better readability or encapsulation".
+    \item refactoring: ``the changed code does not modify the software behavior, e.g., for better readability or encapsulation''.
 \end{itemize}
 
-In this work, we were only interested in the first two group and disregarded the the clusters that manifest a refactoring change. Also, we prefer reporting clusters that manifest concrete patterns. An abstract pattern as opposed to a concrete pattern can account for many changes in the programs. For instance, the pattern `Adding a new statement to a function's body' is deemed more abstract than `Changing a clone of a variable to a borrowing of it in a function argument'.
+In this work, we were only interested in the first two groups and ignored the clusters for refactoring changes. Also, we prefer reporting clusters that manifest concrete patterns. An abstract pattern as opposed to a concrete pattern can account for many changes in the programs. For instance, the pattern `Adding a new statement to a function's body' is deemed more abstract than `Changing a clone of a variable to a borrowing of it in a function argument'. % show example in terms of code; do you have an actual definition for abstract vs concrete?
 
-In our manual analysis, we randomly picked 50 datapoints of each cluster. If the cluster had less than 50 datapoints, we would analyze all of the datapoints in the cluster. Next, we read the code and also the bug report related to all the datapoints (if existed). In case that a similar pattern was detected over the instances of a cluster, we would write a natural language description of that cluster. After providing all the descriptions, we linked similar clusters together as possible candidates for merging. At last, after accomplishing re-examination for merge possibilities, we selected 19 clusters that manifested concrete changes. We discuss about our findings in Section \ref{sec:common_patterns} and \ref{sec:bc_patterns}.
-
-
-
-
+In our manual analysis, we randomly picked 50 datapoints of each cluster. If the cluster had fewer than 50 datapoints, we would analyze all of the datapoints in the cluster. Next, we read the code and the bug reports related to all the datapoints (if they existed). If we judged that the members of a cluster fit into a pattern, we wrote a natural language description of that cluster. Considering the descriptions, we linked similar clusters together as possible candidates for merging. We considered these candidates and carried out appropriate ones. Finally, we selected 19 of the remaining clusters---the ones that manifested concrete changes. We discuss about our findings in Sections~\ref{sec:common_patterns} and \ref{sec:bc_patterns}.
