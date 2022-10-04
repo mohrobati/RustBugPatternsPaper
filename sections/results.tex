@@ -18,21 +18,19 @@ We carried out two manual experiments for evaluating our encoding mechanism. In 
 
 \begin{table}[]
 
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{l|l|r|r}
+\textbf{Catgegory} & \textbf{ID} & \textbf{\# Instances} & \textbf{\# Projects} \\
 \hline
-
-\multirow{10}{*}{General}        
-& \multirow{2}{*}{Attributes} & G.attr.struct & -                                  \\
-& & G.attr.struct.field & -                     \\\cline{2-3}
-& \multirow{2}{*}{Struct} & G.struct.field  & -\\
-& & G.struct.field.pub & -    
-\\\cline{2-3}
-& Option & G.option & -                    \\\cline{2-3}
-& \multirow{4}{*}{Types} & G.type.field  & - \\
-& & G.type.generic & -\\ & & G.type.enum.variant  & - \\
-& & G.type.tuple & -                                         \\\cline{2-3}
-& \multirow{1}{*}{Traits} & G.trait.bound & - \\ 
-\hline
+\multirow{2}{*}{Attributes} & G.attr.struct & 172 & 16                                  \\
+& G.attr.struct.field & 62 & 16                     \\\cline{1-4}
+\multirow{2}{*}{Struct} & G.struct.field  & 179 & 17\\
+& G.struct.field.pub & 23 & 12   
+\\\cline{1-4}
+Option & G.option & 22 & 12                    \\\cline{1-4}
+\multirow{4}{*}{Types} & G.type.field  & 72 & 14 \\
+& G.type.generic & 46 & 14\\ & G.type.enum.variant  & 39 & 12 \\
+& G.type.tuple & 6 & 6                                         \\\cline{1-4}
+\multirow{1}{*}{Traits} & G.trait.bound & 6 & 5 \\ 
 \end{tabular}
 \caption{\label{table:general}Bug Fix Pattern Categorization (General Patterns)}
 \end{table}
@@ -238,22 +236,21 @@ pub struct CoreState {
 
 
 \begin{table}[]
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{l|l|r|r}
+\textbf{Catgegory} & \textbf{ID} & \textbf{\# Instances} & \textbf{\# Projects} \\
 \hline
-\multirow{9}{*}{Borrow Checker} &
-\multirow{2}{*}{Clone}                                         & BC.clone.ref & - \\
-& & BC.clone.drop & -   
-\\\cline{2-3}
-& \multirow{3}{*}{Ref and Deref} & BC.ref.add & - \\
-& & BC.ref.drop & - \\
-& & BC.deref.to\_string  & -                                            \\\cline{2-3}
-& \multirow{2}{*}{Mut} & BC.mut.add  & - \\
-& & BC.mut.drop  & -                                \\\cline{2-3}
-& Vector & BC.vec.slice  & -                                    \\\cline{2-3}
-& \multirow{1}{*}{Lifetime}      
-& BC.lifetime.static  & -
+\multirow{2}{*}{Clone}                                         & BC.clone.ref & 4 & 3 \\
+& BC.clone.drop & 83 & 10   
+\\\cline{1-4}
+\multirow{3}{*}{Ref and Deref} & BC.ref.add & 17 & 7 \\
+& BC.ref.drop & 145 & 14 \\
+& BC.deref.to\_string  & 7 & 4                                            \\\cline{1-4}
+\multirow{2}{*}{Mut} & BC.mut.add  & 11 & 6 \\
+& BC.mut.drop  & 42 & 15                               \\\cline{1-4}
+Vector & BC.vec.slice  & 8 & 6                                    \\\cline{1-4}
+\multirow{1}{*}{Lifetime}      
+& BC.lifetime.static  & 8 & 6
 \\
-\hline
 \end{tabular}
 \caption{\label{table:bc}Bug Fix Pattern Categorization (BC-Related Patterns)}
 \end{table}
