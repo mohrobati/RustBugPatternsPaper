@@ -1,16 +1,19 @@
 \subsection{Automated Program Repair}
 
 
-\subsection{Mining Bug Fix Patters}
+
+\subsection{Mining Bug Fix Patterns and Pattern-based Program Repair}
+
+The main intuition in pattern-based program repair methods is that the bug fixing modifications of the programs follow certain patterns. Thus, prior study of the common bug fix patterns is a crucial step for developing these repair tools. Pan et al. \ref{} analyzed seven large-scale widely used Java projects and obtained 27 common bug fix patterns. Though they did the analysis on Java projects, their reported patterns were not specific to Java. Martinez and Monperrus \ref{} \ref{} exploited the frequency of observed patterns to introduce a heuristic patch searching method. In their empirical evaluation, they concluded that the probabilistic values for repair actions can help with reducing the search space, hence creating a more effective repair tool.
+
+Hanam et al. conducted a similar research but for finding Javascript most pervasive bug fix patterns. They presented a large-scale study of the most common bug fix patterns by mining 105K commits from 134 server-side JavaScript projects. They used DBSCAN clustering algorithm and divided bug fixing change types into 219 clusters, from which they extracted 13 pervasive cross-project bug fix patterns. 
+
+Yang et al. proposed a mining approach to detect Python bug fix patterns via studying fine-grained fixing code changes. In their research, they also examined what portion of the bugs could be fixed using automated bug fixing approaches. Moreover, they evaluated the fix patterns in the wild and realized that 37\% of the buggy codes could be matched by the fix patterns they had found. 
+
+\subsection{Code Patterns in Rust}
+
+Qin et al. \ref{} conducted the first empirical study on real-world Rust program behaviours. They manually inspected 850 unsafe code usages and 17 bugs across five open-source Rust projects, five Rust libraries, two online security databases, and the standard library of Rust. They analyzed the motivation behind unsafe code usage and removal, in addition to obtaining 70 memory-safety issues and 100 concurrency bugs. They also provided Rust programmers with some suggestions and insights to develop better Rust programs. At last, using the results of their analysis, they designed two bug detectors and provided recommendations for developing bug detector in the future.
+
+Li et al. \ref{} present MirChekcer, a fully automated bug detection framework for Rust. This framework works by carrying out static analysis on Rust's Mid-level Intermediate Representation (MIR). The tool exploits the insights obtained from observing existing bugs in Rust code bases. Through recording both numerical and symbolic information, the framework detects errors by using constraint solving techniques. The framework proves its practicability as it detected 33 new bugs including 16 memory-safety faults within 12 Rust crates.
 
 
-Yang et al. proposed a mining approach to detect Python bug fix patterns via studying
-fine-grained fixing code changes. In their research, they also examined what portion of the bugs
-could be fixed using automated bug fixing approaches. Moreover, they evaluated the fix patterns in
-the wild and realized that 37\% of the buggy codes could be matched by the fix patterns they had
-found. \\
-Hanam et al. conducted a similar research but for finding Javascript most pervasive bug fix
-patterns. They presented a large-scale study of the most common bug fix patterns by mining 105K
-commits from 134 server-side JavaScript projects. They used DBSCAN clustering algorithm
-and divided bug fixing change types into 219 clusters, from which they extracted 13 pervasive
-cross-project bug fix patterns. \\
