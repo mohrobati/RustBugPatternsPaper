@@ -1,6 +1,16 @@
-\subsection{Automated Program Repair}
+\subsection{Search-Based Program Repair}
 
+Automated program repair aims to debug faulty source code without human involvement. Prior to code modification, repair tools exploit a fault localization module to speculate the location of bug. Fault localization module ranks program statements based on their suspiciousness. The level of suspiciousness follows a statistical model which is devised based on the fact that buggy statements are executed mostly by failed test cases \ref{}. Researchers have proposed different methods for code repair, each of which follows a different mindset. Here we provide a summarization of the advancements in these different mindset, and will discuss how having a set of predefined fix patterns can be beneficial for repair purposes.
 
+This line of research in program repair follows the competent programmer hypothesis which states that, syntactically, a faulty programs is not that far away from its correct version. Using this concept, we can develop mutation operators, which are the operators that change an expression or a statement. We can apply the mutation operators on the list given by the fault localization module. If the mutation on a statement does not result in complete success after running the test cases, we assume that the statement is correct and move on to the next statement in the list. 
+
+The computation cost depends on the number of statements and their respective mutation operations. Moreover, each time we mutate our program, we ought to evaluate the result by checking the program against the required specification. Given a sufficiently large enough search space, a complete search approach renders the repair tool virtually useless. That is why, the researchers have proposed heuristic searching algorithms to rectify the faulty program faster.
+
+Weimer et al. \ref{} developed GenProg, a program repair tool that used genetic programming. The main idea behind this tool is that statements follow certain patterns in a codebase. Therefore, if we can find the correct version of a faulty statement somewhere in the program. This tool showed promising results as it managed to find patches without any additional annotations or human involvements.
+
+However, Arcuri and Briand \ref{} suspected the effectiveness of genetic programming in GenProg, as the tool mostly found the patch in the random initialization, in other words, before the evolution begins. Through developing TrpAutoRepair \ref{} and RSRepair \ref{}, the test case prioritization is necessary while using genetic programming, as fitness evaluation is an expensive part of the repair pipeline.
+
+Tan and Rovehoudhury \ref{} used mutation repairing for fixing regression bugs. They categorized common code changes in real-world regressions after studying 73 program evolution benchmarks. They used this categorization to design mutation operators, and chose them based on the faulty location’s to repair the program.
 
 \subsection{Mining Bug Fix Patterns and Pattern-based Program Repair}
 
