@@ -74,8 +74,7 @@ Multiplying the number of occurrences of all observed items in a change by their
 
 \begin{table}
 \caption{\label{table:repos} Target repositories for mining}
-\begin{tabular}{|c|c|c|c|c|}
-    \hline
+\begin{tabular}{c|c|c|c|c}
     Project Name & Stars(k) & LOC & \# Commits & Avg. Code Churn \\ \hline
     denoland/deno & 84.7 & 562468 & 7730 & 49.22 \\ \hline
     tauri-apps/tauri & 48.5 & 130726 & 2929 & 31.67 \\ \hline
@@ -94,7 +93,7 @@ Multiplying the number of occurrences of all observed items in a change by their
     ogham/exa & 18.9 & 17114 & 1558 & 11.99 \\ \hline
     SergioBenitez/Rocket & 18.2 & 90055 & 2127 & 19.75 \\ \hline
     rustdesk/rustdesk & 27.7 & 85322 & 1664 & 72.81 \\ \hline
-    tokio-rs/tokio & 17.2 & 126089 & 3006 & 28.87 \\ \hline
+    tokio-rs/tokio & 17.2 & 126089 & 3006 & 28.87 
 \end{tabular}
 \end{table}
    
@@ -137,7 +136,7 @@ Next, we collect a pair of revisions for each Rust file. The pair includes the s
 
 \subsection{\label{sec:clustering_data}Clustering Data}
 
-Having collected our datapoints, our next task is to cluster them so that we can categorize bug patterns. Like~\cite{JS paper, Python paper}, we use the DBSCAN clustering algorithm for two main reasons. Firstly, in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm. Secondly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters; centroid-based methods like k-means can't detect such clusters. We tried k-means and the more powerful fuzzy variant F-means and did not get useful clusters.
+Having collected our datapoints, our next task is to cluster them so that we can categorize bug patterns. Like~citehere, we use the DBSCAN clustering algorithm for two main reasons. Firstly, in contrast to k-means, it does not require the number of clusters in advance as an input to the algorithm. Secondly, it is a density-based clustering method, which means that it detects arbitrarily shaped clusters; centroid-based methods like k-means can't detect such clusters. We tried k-means and the more powerful fuzzy variant F-means and did not get useful clusters.
 
 DBSCAN takes two tuneable parameters. The first parameter $\epsilon$ indicates a radius within which a point is a core point, a border point, or an outlier. The second parameter $Z$ is the minimum number of points per cluster. We ran DBSCAN using different combinations of these two parameters. In Figure~\ref{fig:clustering}, we show nine different experiments, with their respective parameter values. Each subplot specifies, for both $D_g$ and $D_b$, the number of clustered points, noise points, and the number of clusters.
 
