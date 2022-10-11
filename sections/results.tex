@@ -4,16 +4,15 @@ In this section, we present the clusters of fix patterns that we found in our da
 
 \textbf{RQ1. Does our data modelling approach capture the most important aspect of program changes?} 
 
-As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fix-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST. Here we want to evaluate the effectiveness of our encoding.
+As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fix-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST (alongside some BC-related elements). Here we want to evaluate the effectiveness of our encoding.
 
-The general idea for our evaluation is whether the most important program elements has the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (Fig ref).
+The general idea for our evaluation is whether the most important program elements has the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point \cite{collins2003circle}. For this purpose, we used packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (Similar to Figure~\ref{fig:essence}).
 
 We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
 
-We carried out two manual experiments for evaluating our encoding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carry out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its encoding correctness. The final results are TBD\% and TBD\% correctness in the first and second experiments, respectively, which shows the effectiveness of our encoding mechanism.
+We carried out two manual experiments for evaluating our encoding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carry out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its encoding correctness. The final results are 55\% and 78\% correctness in the first and second experiments, respectively, which shows the effectiveness of our encoding mechanism.
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
-
 
 
 \begin{table}[]
@@ -154,7 +153,7 @@ pub struct MediaRule {
 
 \noindent \textbf{Description:} Rust is a null safe language, meaning that object references cannot assume null values. If we want void values for our object, we would have to use Option type. Option is essentially an enum with two variants, Some which indicates that our object has an value, and None shows the absence of any value. In this pattern, the developer changes the type of a struct field to an Option of its type. This makes it possible for the developer to modify the program in a way that it covers the scenarios in which the the struct field has no value.
 
-For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option<MediaQueryList>, and modified the other parts of the source code, accordingly.
+For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option\verb+<+MediaQueryList\verb+>+, and modified the other parts of the source code, accordingly.
 
 
 \subsection{Types}
@@ -239,8 +238,8 @@ pub struct CoreState {
 \begin{tabular}{l|l|r|r}
 \textbf{Catgegory} & \textbf{ID} & \textbf{\# Instances} & \textbf{\# Projects} \\
 \hline
-\multirow{2}{*}{Clone}                                         & BC.clone.ref & 4 & 3 \\
-& BC.clone.drop & 83 & 10   
+\multirow{2}{*}{Clone}                                         & BC.clone.drop & 83 & 10 \\
+& BC.clone.ref & 4 & 3   
 \\\cline{1-4}
 \multirow{3}{*}{Ref and Deref} & BC.ref.add & 17 & 7 \\
 & BC.ref.drop & 145 & 14 \\
@@ -258,17 +257,6 @@ Vector & BC.vec.slice  & 8 & 6                                    \\\cline{1-4}
 
 \subsubsection{Clone}
 
-\noindent \textit{ \textbf{BC.clone.ref} Dropping clone and adding borrowing}
-
-\begin{lstlisting}[language=Rust, style=colouredRust]
--- let field_id = schema.get_or_create(attribute.clone())?;
-++ let field_id = schema.get_or_create(&attribute)?;
-\end{lstlisting}
-
-\noindent \textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
-
-Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
-
 \noindent \textit{ \textbf{BC.clone.drop} Removing clone}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
@@ -280,7 +268,18 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent \textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+\noindent \textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+
+\noindent \textit{ \textbf{BC.clone.ref} Dropping clone and adding borrowing}
+
+\begin{lstlisting}[language=Rust, style=colouredRust]
+-- let field_id = schema.get_or_create(attribute.clone())?;
+++ let field_id = schema.get_or_create(&attribute)?;
+\end{lstlisting}
+
+\noindent \textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
+
+Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
 
 \subsubsection{Ref and Deref}
 
@@ -294,7 +293,7 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 
 \noindent \textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
 
-To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git\_branches.rs}}, the developer borrows the value of $repo\_dir$ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation ($remove\_dir\_all(repo\_dir)$) which fixes a bug. \\
+To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git\_branches.rs}}, the developer borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation (\verb+remove_dir_all(repo_dir)+) which fixes a bug. \\
 
 \noindent \textit{ \textbf{BC.ref.drop} Removing Borrowing}
 
@@ -327,7 +326,7 @@ let displayed_attributes = schema.clone().map(|s| {
 });
 \end{lstlisting}
 
-\noindent \textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling $to\_string()$ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of $T$, while $T$ directly implements $to\_string()$. It is faster and more performance efficient to dereference the object and then call $to\_string()$ on it. The deletion case indicates a redundant dereference, thus it is removed.
+\noindent \textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. It is faster and more performance efficient to dereference the object and then call \verb+to_string()+ on it. The deletion case indicates a redundant dereference, thus it is removed.
 
 
 \subsubsection{Mut}
@@ -344,7 +343,7 @@ parser::Parser::new(args)
         })?
 \end{lstlisting}
 
-\noindent \textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour.
+\noindent \textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour. \\
 
 \noindent \textit{ \textbf{BC.mut.drop} Dropping mutability}
 
