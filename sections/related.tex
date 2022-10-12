@@ -6,22 +6,34 @@ Automated program repair aims to debug faulty source code without human involvem
 One line of research in program repair follows the competent programmer hypothesis~\cite{gopinath2014mutant}: syntactically, a faulty programs is not that far away from its correct version. This hypothesis suggests the search-based program repair mindset. If the hypothesis holds, we can develop mutation operators (which change an expression or a statement) and apply them to a list of fault locations provided by the fault localization module. If mutation of a statement does not result in complete success after running the test cases, we assume that the statement is correct and move on to the next fault location.
 
 Weimer et al.~\cite{forrest2009genetic,nguyen2009using} developed GenProg, a program repair tool that uses genetic programming. The main idea behind this tool is that statements follow certain patterns in a codebase. Therefore, if we can find the correct version of a faulty statement somewhere in the program. This tool showed promising results as it managed to find patches without any additional annotations or human involvements.
+% the sentence starting with "therefore" lacks a verb
 
 However, Arcuri and Briand~\cite{arcuri2011practical} suspected the effectiveness of genetic programming in GenProg, as the tool mostly found the patch in its random initialization phase, in other words, before the evolution begins. Through developing TrpAutoRepair~\cite{qi2013efficient} and RSRepair~\cite{qi2014strength}, the test case prioritization is necessary while using genetic programming, as fitness evaluation is an expensive part of the repair pipeline.
 
 Tan and Rovehoudhury~\cite{tan2015relifix} used mutation repairing for fixing regression bugs. They categorized common code changes in real-world regressions after studying 73 program evolution benchmarks. They used this categorization to design mutation operators, and chose them based on the faulty location’s to repair the program.
 
+% replace this next paragraph with some text about how search based program repair depends on patterns, and we have patterns that we have found to be used in actual repairs. That should go at the top of 5.1.
+
+% say why you're talking about GenProg etc.
+
+% fix the citations
+
 The computational cost of search-based program repair depends on the number of statements and their respective mutation operations. Moreover, each time we mutate our program, we ought to evaluate the result by checking the program against the required specification. Given a sufficiently large enough search space, a complete search approach renders the repair tool virtually useless. That is why, the researchers have proposed heuristic searching algorithms to rectify the faulty program faster.
 
 \subsection{Mining Bug Fix Patterns and Pattern-based Program Repair}
 
+% say why pattern-based repair is different from search-based repair
 The main intuition in pattern-based program repair methods is that the bug fixing modifications of the programs follow certain patterns. Thus, prior study of the common bug fix patterns is a crucial step for developing these repair tools. Pan et al. \cite{pan2009toward} analyzed seven large-scale widely used Java projects and obtained 27 common bug fix patterns. Though they did the analysis on Java projects, their reported patterns were not specific to Java. Martinez and Monperrus \cite{martinez2015mining} \cite{martinez2012mining} exploited the frequency of observed patterns to introduce a heuristic patch searching method. In their empirical evaluation, they concluded that the probabilistic values for repair actions can help with reducing the search space, hence creating a more effective repair tool.
 
-Hanam et al. \cite{hanam2016discovering} conducted a similar research but for finding Javascript most pervasive bug fix patterns. They presented a large-scale study of the most common bug fix patterns by mining 105K commits from 134 server-side JavaScript projects. They used DBSCAN clustering algorithm and divided bug fixing change types into 219 clusters, from which they extracted 13 pervasive cross-project bug fix patterns. 
+Hanam et al. \cite{hanam2016discovering} conducted similar research, but for finding JavaScript most pervasive bug fix patterns. They presented a large-scale study of the most common bug fix patterns by mining 105K commits from 134 server-side JavaScript projects. They used the DBSCAN clustering algorithm and divided bug fixing change types into 219 clusters, from which they extracted 13 pervasive cross-project bug fix patterns. 
 
 Yang et al. \cite{yang2022mining} proposed a mining approach to detect Python bug fix patterns via studying fine-grained fixing code changes. In their research, they also examined what portion of the bugs could be fixed using automated bug fixing approaches. Moreover, they evaluated the fix patterns in the wild and realized that 37\% of the buggy codes could be matched by the fix patterns they had found. 
 
+% again, say how we are like or unlike these works
+
 \subsection{Code Patterns in Rust}
+
+% say how is this related to our work?
 
 Qin et al. \cite{qin2020understanding} conducted the first empirical study on real-world Rust program behaviours. They manually inspected 850 unsafe code usages and 17 bugs across five open-source Rust projects, five Rust libraries, two online security databases, and the standard library of Rust. They analyzed the motivation behind unsafe code usage and removal, in addition to obtaining 70 memory-safety issues and 100 concurrency bugs. They also provided Rust programmers with some suggestions and insights to develop better Rust programs. At last, using the results of their analysis, they designed two bug detectors and provided recommendations for developing bug detector in the future.
 
