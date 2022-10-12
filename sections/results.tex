@@ -4,16 +4,21 @@ In this section, we present the clusters of fix patterns that we found in our da
 
 \textbf{RQ1. Does our data modelling approach capture the most important aspect of program changes?} 
 
-As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fix-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST (alongside some BC-related elements). Here we want to evaluate the effectiveness of our encoding.
+As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST (alongside some BC-related elements). Here we want to evaluate the effectiveness of our encoding.
 
-The general idea for our evaluation is whether the most important program elements has the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point \cite{collins2003circle}. For this purpose, we used packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (Similar to Figure~\ref{fig:essence}).
+The general idea for our evaluation is whether the most important program elements get the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point \cite{collins2003circle}. For this purpose, we used the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (similar to Figure~\ref{fig:essence}).
 
 We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
 
-We carried out two manual experiments for evaluating our encoding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carry out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its encoding correctness. The final results are 55\% and 78\% correctness in the first and second experiments, respectively, which shows the effectiveness of our encoding mechanism.
+We carried out two manual experiments for evaluating our encoding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carried out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its encoding correctness. The final results are 55\% and 78\% correctness in the first and second experiments, respectively, which shows the effectiveness of our encoding mechanism.
+
+% no, you have to compute the intersection
+% when is our approach effective and when is it not?
+% more detailed stats would probably be good too
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
+{\bf There is no text in this subsection.} 
 
 \begin{table}[]
 
@@ -38,7 +43,7 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
 
 \subsection{Attributes}
 
-Attributes in Rust make it possible for the developers to add metadata to program elements. These attributes can be added to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. \\
+Attributes in Rust enable developers to add metadata to program elements. Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. \\
 
 \noindent \textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
@@ -63,7 +68,7 @@ pub struct Call {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways; (G.attr.struct.add) Adding attributes to the struct, (G.attr.struct.drop) Removing attributes from the struct, (G.attr.struct.change) Changing the content of an existing attribute. The attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
+\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: (G.attr.struct.add) adding attributes to the struct; (G.attr.struct.drop) removing attributes from the struct; and (G.attr.struct.change) changing the content of an existing attribute. These attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
 
 \noindent \textit{ \textbf{G.attr.struct.field} Modifying the attributes of struct fields}
 
@@ -92,6 +97,7 @@ pub struct Retain {
 \end{lstlisting}
 
 \noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+% this last sentence immediately prior to here has too many moving parts
 
 \subsection{Struct} 
 \noindent \textit{ \textbf{G.struct.field} Adding/Removing a struct field}
@@ -110,7 +116,7 @@ struct SnapshotService<U, R> {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} A set of new fields are add to or removed from an existing struct. The addition of a new field happens when the developer need to store a new piece of data so they can implement a desired behaviour. The removal of a field  happens when the developer realizes that the field is expendable with respect to the behaviour they want to implement. \\
+\noindent \textbf{Description:} A set of new fields are added to or removed from an existing struct. A developer adds a new field to store a new piece of data in a struct. A developer removes a field when the developer realizes that the field is not required with respect to the behaviour they want to implement (possibly because they have moved it elsewhere). \\
 
 \noindent \textit{ \textbf{G.struct.field.pub} Modifying the access modifiers of struct fields}
 
@@ -132,7 +138,7 @@ pub struct Languages {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} Adding pub to a struct field makes it possible to access that field within external modules. In the instances of this cluster, adding pub access modifier happened in a bug fixing change, where the developer needed to access a field which had not been granted public access. On the other hand, the public access might be revoked if the developer realizes there is no external access to the field.
+\noindent \textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in a bug fixing change, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes.
 
 \subsection{Option}
 \vspace{3mm}
@@ -151,9 +157,9 @@ pub struct MediaRule {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} Rust is a null safe language, meaning that object references cannot assume null values. If we want void values for our object, we would have to use Option type. Option is essentially an enum with two variants, Some which indicates that our object has an value, and None shows the absence of any value. In this pattern, the developer changes the type of a struct field to an Option of its type. This makes it possible for the developer to modify the program in a way that it covers the scenarios in which the the struct field has no value.
+\noindent \textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If we want a variable to contain null, we would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that our variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
 
-For instance, in the Rust project swc-project/swc (A fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}, so, as shown in the code snippet above, they changed type MediaQueryList to Option\verb+<+MediaQueryList\verb+>+, and modified the other parts of the source code, accordingly.
+For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. So, as shown in the code snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
 
 
 \subsection{Types}
@@ -169,10 +175,10 @@ pub struct Manifest {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. These reasons can be a step for implementing a new feature or rectifying the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement. \\
+\noindent \textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement. \\
+% maybe discuss the specific example a bit?
 
-
-\noindent \textit{ \textbf{G.type.generic} Changing a generic type}
+\noindent \textit{ \textbf{G.type.generic} Changing a generic type parameter}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 #[derive(Debug, Clone, PartialEq)]
@@ -184,7 +190,7 @@ pub struct Anchor {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} This a change of the generic (parametric) type of a struct field. Similar to \textit{\textbf{G.type.field}}, this change can also happen for the mentioned reasons. \\
+\noindent \textbf{Description:} This a change of the type parameter of a struct field. As with \textit{\textbf{G.type.field}}, this change can also happen for the mentioned reasons. \\
 
 \noindent \textit{ \textbf{G.type.enum.variant} Change in enum variant value type}
 
@@ -198,7 +204,7 @@ pub enum ResolvedDependency {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} In Rust, we can specify the type of the value that an enum variant can store. Using this feature, we can avoid using a struct alongside our enum variants to specify the value type. This change pattern is associated with a change in enum variant types. \\
+\noindent \textbf{Description:} In Rust, developers can specify the type of the value that an enum variant can store. Using this feature, they can avoid having to use a struct along with enum variants. This change pattern is associated with a change in enum variant types. \\
 
 
 \noindent \textit{ \textbf{G.type.tuple} Changing the type inside a tuple}
@@ -215,7 +221,7 @@ pub struct CoreState {
 
 
 
-\noindent \textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a tuple with fewer number of arguments.
+\noindent \textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a smaller-arity tuple.
 
 \subsection{Traits}
 \noindent \textit{ \textbf{G.trait.bound} TraitBound Change}
@@ -229,10 +235,9 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern related to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
+\noindent \textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
 
 \subsection{\label{sec:bc_patterns}BC-Related Bug Fix Patterns (RQ3)}
-
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}

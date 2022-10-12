@@ -1,4 +1,6 @@
 .DS_Store
+*~
+*.rubbercache
 *.aux
 *.log
 *.out
