@@ -49,11 +49,60 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{graphs} 
+\usetikzlibrary{matrix}
 \usepackage{multirow}
 % \usepackage[backend=bibtex, style=authoryear]{biblatex}
 % \addbibresource{bibtex.bib}
 \usepackage{subfiles} % Best loaded last in the preamble
 \input{defs}
+
+\tikzset{ 
+    table/.style={
+        matrix of nodes,
+        row sep=-\pgflinewidth,
+        column sep=-\pgflinewidth,
+        nodes={
+            rectangle,
+            draw=black,
+            align=center
+        },
+        minimum height=1.5em,
+        text depth=0.5ex,
+        text height=2ex,
+        nodes in empty cells,
+        column 1/.style={
+            nodes={text width=5em,font=\bfseries, fill=gray!20}
+        },
+        column 2/.style={
+            nodes={text width=4em,font=\bfseries}
+        },
+        column 3/.style={
+            nodes={text width=5em,font=\bfseries}
+        },
+        column 4/.style={
+            nodes={text width=5em,font=\bfseries}
+        },  
+        column 5/.style={
+            nodes={text width=8em,font=\bfseries}
+        },  
+        column 6/.style={
+            nodes={text width=5em,font=\bfseries}
+        },  
+        column 7/.style={
+            nodes={text width=5em,font=\bfseries}
+        },
+        column 8/.style={
+            nodes={text width=9em,font=\bfseries}
+        },
+        column 9/.style={
+            nodes={text width=3em,font=\bfseries}
+        }
+    }
+}
+
+
 
 \begin{document}
 

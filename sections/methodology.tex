@@ -20,10 +20,141 @@ We parse two versions of a changed Rust file in a commit: the file before the co
 
 \subsubsection{\label{sec:path_extraction}Path Extraction}
 
+
+
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.8\textwidth]{figs/extraction.drawio.pdf}
-\caption{\label{fig:extraction}Extracting paths from an ASTDiff. the ASTDiff on left corresponds to the code change in the yellow box on the top right. A DFS search will identify three paths, shown in three different colors at right.}
+\begin{tikzpicture}[scale=0.7, transform shape,every node/.style={draw},minimum height=0.7cm]
+
+    
+    %% Left AST
+    
+    \draw (-1.5,1.5) node[shape=rectangle, minimum width=3cm,minimum height=5.4cm, rounded corners=1ex, xshift=1.5cm, yshift=-2.5cm](context){};
+    
+    \node[draw=none] at (0,1) {Context};
+    
+    \draw (0,0) node[](a1){ItemFn};
+    \draw (0,-1) node[](a2){Local};
+    \draw (0,-2) node[](a3){ExprCall};
+    \draw (0,-3) node[](a4){args};
+    
+    
+    \draw (-2,-5) node[shape=circle](null){null};
+    
+    
+    \draw (0,-5) node[](b1){ExprReference};
+    \draw (0,-6) node[](b2){Path};
+    \draw (0,-7) node[](b3){Ident};
+    \draw (0,-8) node[](b4){tail};
+    
+    \draw (3,-5) node[](c1){ExprMethodCall};
+    \draw (3,-6) node[](c2){Path};
+    \draw (3,-7) node[](c3){Ident};
+    \draw (3,-8) node[](c4){head};
+    
+    
+    \draw (5,-6.5) node[](d1){Ident};
+    \draw (5,-7.5) node[](d2){clone};
+    
+    
+    \draw[->]  (a1) -- (a2);
+    \draw[->]  (a2) -- (a3);
+    \draw[->]  (a3) -- (a4);
+    
+    \draw[->]  (context) -- (null);
+    \draw[->]  (context) -- (b1);
+    \draw[->]  (context) -- (c1);
+    
+    \draw[->]  (b1) -- (b2);
+    \draw[->]  (b2) -- (b3);
+    \draw[->]  (b3) -- (b4);
+    
+    \draw[->]  (c1) -- (c2);
+    \draw[->]  (c2) -- (c3);
+    \draw[->]  (c3) -- (c4);
+    
+    \draw[->]  (c1) -- (d1);
+    
+    \draw [->, red] plot [smooth, tension=1] coordinates { (2,1) (2,-3) (1.4,-5) (1.4,-8.5)};
+    
+    \draw [->, green] plot [smooth, tension=1] coordinates { (2.5,1) (3,-3) (5,-5) (4,-6.5) (3.7,-8.5)};
+    
+    \draw [->, purple] plot [smooth, tension=1] coordinates { (3,1) (3.5,-3) (5.5,-5) (5.5,-8.5)};
+    
+    %% Arrow
+    
+    \node[draw=none] at (5.1,-2.7) {Path Extraction};
+    \draw [-stealth,double,line width=2,color=blue!40](4.1,-3.2) -- (6.3,-3.2);
+    
+    %% Code at top right
+    
+    \node (codeA) [fill=yellow!20, rounded corners=1ex] at (10, 0) {%
+    \centering
+    \begin{minipage}{10cm}
+    \centering
+    \begin{lstlisting}[language=Rust, style=colouredRust]
+      fn sample() {
+        // ...
+        -- let receiver = foo(arg1, tail, head)
+        ++ let receiver = foo(arg1, &tail, head.clone())
+        // ...
+      }
+    \end{lstlisting}
+    
+    \end{minipage}%
+    };
+    
+    %% Paths at right
+    
+    \draw (7.5,-2.5) node[fill=red!30](e1){ItemFn};
+    \draw (7.5,-3.5) node[fill=red!30](e2){Local};
+    \draw (7.5,-4.5) node[fill=red!30](e3){ExprCall};
+    \draw (7.5,-5.5) node[fill=red!30](e4){ExprReference};
+    \draw (7.5,-6.5) node[fill=red!30](e5){Path};
+    \draw (7.5,-7.5) node[fill=red!30](e6){Ident};
+    
+    \node[draw=none, color=red] at (7.5,-8.3) {Path 1};
+    
+    \draw (10.5,-2.5) node[fill=green!20](f1){ItemFn};
+    \draw (10.5,-3.5) node[fill=green!20](f2){Local};
+    \draw (10.5,-4.5) node[fill=green!20](f3){ExprCall};
+    \draw (10.5,-5.5) node[fill=green!20](f4){ExprMethodCall};
+    \draw (10.5,-6.5) node[fill=green!20](f5){Path};
+    \draw (10.5,-7.5) node[fill=green!20](f6){Ident};
+    
+    \node[draw=none, color=green] at (10.5,-8.3) {Path 2};
+    \node[draw=none, color=green] at (10.5,-8.3) {Path 2};
+    
+    \draw (13.5,-2.5) node[fill=purple!20](g1){ItemFn};
+    \draw (13.5,-3.5) node[fill=purple!20](g2){Local};
+    \draw (13.5,-4.5) node[fill=purple!20](g3){ExprCall};
+    \draw (13.5,-5.5) node[fill=purple!20](g4){ExprMethodCall};
+    \draw (13.5,-6.5) node[fill=purple!20](g5){Path};
+    \draw (13.5,-7.5) node[fill=purple!20](g6){clone};
+    \node[draw=none, color=purple] at (13.5,-8.3) {Path 3};
+    
+    \draw[->]  (e1) -- (e2);
+    \draw[->]  (e2) -- (e3);
+    \draw[->]  (e3) -- (e4);
+    \draw[->]  (e4) -- (e5);
+    \draw[->]  (e5) -- (e6);
+    
+    \draw[->]  (f1) -- (f2);
+    \draw[->]  (f2) -- (f3);
+    \draw[->]  (f3) -- (f4);
+    \draw[->]  (f4) -- (f5);
+    \draw[->]  (f5) -- (f6);
+    
+    \draw[->]  (g1) -- (g2);
+    \draw[->]  (g2) -- (g3);
+    \draw[->]  (g3) -- (g4);
+    \draw[->]  (g4) -- (g5);
+    \draw[->]  (g5) -- (g6);
+    
+    \end{tikzpicture}
+    
+    \caption{\label{fig:extraction}Extracting paths from an ASTDiff. the ASTDiff on left corresponds to the code change in the yellow box on the top right. A DFS search will identify three paths, shown in three different colors at right.}
+
 \end{figure}
 
 
@@ -53,7 +184,85 @@ In our methodology, we propose a novel representation. Similar to the first appr
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{figs/essence.drawio.pdf}
+    \begin{tikzpicture}[scale=0.7, transform shape, every node/.style={draw},minimum height=0.7cm]
+        
+        %% Left AST
+        
+        \draw (-1.5,1.5) node[shape=rectangle, minimum width=3cm,minimum height=5.4cm, rounded corners=1ex, xshift=1.5cm, yshift=-2.5cm](context){};
+        
+        \node[draw=none] at (0,1) {Context};
+        
+        \draw (0,0) node[](a1){ItemFn};
+        \draw (0,-1) node[](a2){Local};
+        \draw (0,-2) node[](a3){ExprCall};
+        \draw (0,-3) node[](a4){args};
+        
+        
+        \draw (-2,-5) node[shape=circle](null){null};
+        
+        
+        \draw (0,-5) node[](b1){ExprReference};
+        \draw (0,-6) node[](b2){Path};
+        \draw (0,-7) node[](b3){Ident};
+        \draw (0,-8) node[](b4){tail};
+        
+        \draw (3,-5) node[](c1){ExprMethodCall};
+        \draw (3,-6) node[](c2){Path};
+        \draw (3,-7) node[](c3){Ident};
+        \draw (3,-8) node[](c4){head};
+        
+        
+        \draw (5,-6.5) node[](d1){Ident};
+        \draw (5,-7.5) node[](d2){clone};
+        
+        
+        \draw[->]  (a1) -- (a2);
+        \draw[->]  (a2) -- (a3);
+        \draw[->]  (a3) -- (a4);
+        
+        \draw[->]  (context) -- (null);
+        \draw[->]  (context) -- (b1);
+        \draw[->]  (context) -- (c1);
+        
+        \draw[->]  (b1) -- (b2);
+        \draw[->]  (b2) -- (b3);
+        \draw[->]  (b3) -- (b4);
+        
+        \draw[->]  (c1) -- (c2);
+        \draw[->]  (c2) -- (c3);
+        \draw[->]  (c3) -- (c4);
+        
+        \draw[->]  (c1) -- (d1);
+        
+
+        %% Tables
+        
+        \matrix (table1) [table,text width=6em,nodes={scale=0.45,transform shape}] at (8.5,1)
+        {
+        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone\\
+        \# & 1 & 1 & 1 & 1 & 2 & 3 & 1 & 1 \\
+        };
+        
+        \node[draw=none] at (8.2,0) {Multiply};
+        \draw [-stealth,double,line width=1,color=blue!40](7,0.4) -- (7,-0.4);
+        
+        \matrix (table2) [table,text width=6em,nodes={scale=0.45,transform shape}] at (8.5,-1)
+        {
+        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone\\
+        weight & 0.0004 & 2.21e-05 & 8.68e-05 & 1 & 2.60e-05 & 2.76e-05 & 4.75e-05 & 1 \\
+        };
+        
+        \node[draw=none] (circlepack) at (10.5,-6.2)
+            {\includegraphics[width=0.7\textwidth]{figs/circlepack.png}};
+            
+        
+        \node[draw=none] at (9,-2.3) {Visualizing Essence};
+        \draw [-stealth,double,line width=1,color=blue!40](7,-1.6) -- (7.5,-3.4);
+        
+        
+        \end{tikzpicture}
+        
+
     \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights, resulting in the essence of change (visualized with a circle pack figure at right). The left and right key value tables show the number of occurrences of each item and its respective weight, respectively.}
 \end{figure}
 
