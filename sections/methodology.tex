@@ -30,7 +30,9 @@ We parse two versions of a changed Rust file in a commit: the file before the co
     %% Left AST
     
     \draw (-1.5,1.5) node[shape=rectangle, minimum width=3cm,minimum height=5.4cm, rounded corners=1ex, xshift=1.5cm, yshift=-2.5cm](context){};
-    
+
+    \node[draw, minimum height=0.5, fill=yellow!20] at (-0.74,1.7) {ASTDiff};
+        
     \node[draw=none] at (0,1) {Context};
     
     \draw (0,0) node[](a1){ItemFn};
@@ -237,11 +239,17 @@ In our methodology, we propose a novel representation. Similar to the first appr
 
         %% Tables
         
+        \node[draw, minimum height=0.5, fill=yellow!20] at (-0.74,1.7) {ASTDiff};
+
+        \node[draw, minimum height=0.5, fill=yellow!20] at (4.29,1.73) {Occurrences data};
+        
         \matrix (table1) [table,text width=6em,nodes={scale=0.45,transform shape}] at (8.5,1)
         {
         Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone\\
         \# & 1 & 1 & 1 & 1 & 2 & 3 & 1 & 1 \\
         };
+        
+        \node[draw, minimum height=0.5, fill=yellow!20] at (4.02,-0.25) {Weights data};
         
         \node[draw=none] at (8.2,0) {Multiply};
         \draw [-stealth,double,line width=1,color=blue!40](7,0.4) -- (7,-0.4);
@@ -280,25 +288,25 @@ Multiplying the number of occurrences of all observed items in a change by their
 
 \begin{table}
 \caption{\label{table:repos} Target repositories for mining}
-\begin{tabular}{c|c|c|c|c}
-    Project Name & Stars(k) & LOC & \# Commits & Avg. Code Churn \\ \hline
-    denoland/deno & 84.7 & 562468 & 7730 & 49.22 \\ \hline
-    tauri-apps/tauri & 48.5 & 130726 & 2929 & 31.67 \\ \hline
-    alacritty/alacritty & 41.2 & 45803 & 2017 & 27.53 \\ \hline
-    sharkdp/bat & 36.4 & 93258 & 2392 & 59.13 \\ \hline
-    starship/starship & 28 & 176630 & 2290 & 25.1 \\ \hline
-    rust-lang/rustlings & 28.7 & 9852 & 1391 & 8.92 \\ \hline
-    meilisearch/meilisearch & 28.6 & 66872 & 3849 & 279.7 \\ \hline
-    sharkdp/fd & 24.2 & 10383 & 1025 & 12.2 \\ \hline
-    swc-project/swc & 23.5 & 13512766 & 5205 & 44.34 \\ \hline
-    yewstack/yew & 23.2 & 112972 & 2239 & 21.79 \\ \hline
-    xi-editor/xi-editor & 19.5 & 58783 & 2104 & 28.67 \\ \hline
-    AppFlowy-IO/AppFlowy & 25.9 & 182830 & 2600 & 29.49 \\ \hline
-    firecracker-microvm/firecracker & 18.9 & 156759 & 3536 & 58.26 \\ \hline
-    nushell/nushell & 20.3 & 181710 & 5922 & 22.38 \\ \hline
-    ogham/exa & 18.9 & 17114 & 1558 & 11.99 \\ \hline
-    SergioBenitez/Rocket & 18.2 & 90055 & 2127 & 19.75 \\ \hline
-    rustdesk/rustdesk & 27.7 & 85322 & 1664 & 72.81 \\ \hline
+\begin{tabular}{l r r r r}
+    Project Name & Stars(k) & LOC & \# Commits & Avg. Code Churn \\
+    denoland/deno & 84.7 & 562468 & 7730 & 49.22 \\
+    tauri-apps/tauri & 48.5 & 130726 & 2929 & 31.67 \\
+    alacritty/alacritty & 41.2 & 45803 & 2017 & 27.53 \\
+    sharkdp/bat & 36.4 & 93258 & 2392 & 59.13 \\
+    starship/starship & 28 & 176630 & 2290 & 25.1 \\
+    rust-lang/rustlings & 28.7 & 9852 & 1391 & 8.92 \\
+    meilisearch/meilisearch & 28.6 & 66872 & 3849 & 279.7 \\
+    sharkdp/fd & 24.2 & 10383 & 1025 & 12.2 \\
+    swc-project/swc & 23.5 & 13512766 & 5205 & 44.34 \\
+    yewstack/yew & 23.2 & 112972 & 2239 & 21.79 \\
+    xi-editor/xi-editor & 19.5 & 58783 & 2104 & 28.67 \\
+    AppFlowy-IO/AppFlowy & 25.9 & 182830 & 2600 & 29.49 \\
+    firecracker-microvm/firecracker & 18.9 & 156759 & 3536 & 58.26 \\
+    nushell/nushell & 20.3 & 181710 & 5922 & 22.38 \\
+    ogham/exa & 18.9 & 17114 & 1558 & 11.99 \\
+    SergioBenitez/Rocket & 18.2 & 90055 & 2127 & 19.75 \\
+    rustdesk/rustdesk & 27.7 & 85322 & 1664 & 72.81 \\
     tokio-rs/tokio & 17.2 & 126089 & 3006 & 28.87 
 \end{tabular}
 \end{table}
