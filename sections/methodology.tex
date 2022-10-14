@@ -155,7 +155,7 @@ We parse two versions of a changed Rust file in a commit: the file before the co
     
     \end{tikzpicture}
     
-    \caption{\label{fig:extraction}Extracting paths from an ASTDiff. the ASTDiff on left corresponds to the code change in the yellow box on the top right. A DFS search will identify three paths, shown in three different colors at right.}
+    \caption{\label{fig:extraction}The ASTDiff (left) corresponds to the code change in the yellow box (top right). A DFS will identify three paths, shown in three different colors at right.}
 
 \end{figure}
 
@@ -249,7 +249,7 @@ In our methodology, we propose a novel representation. Similar to the first appr
         \# & 1 & 1 & 1 & 1 & 2 & 3 & 1 & 1 \\
         };
         
-        \node[draw, minimum height=0.5, fill=yellow!20] at (4.02,-0.25) {Weights data};
+        \node[draw, minimum height=0.5, fill=yellow!20] at (4.12,-0.25) {Weighted data};
         
         \node[draw=none] at (8.2,0) {Multiply};
         \draw [-stealth,double,line width=1,color=blue!40](7,0.4) -- (7,-0.4);
@@ -271,7 +271,7 @@ In our methodology, we propose a novel representation. Similar to the first appr
         \end{tikzpicture}
         
 
-    \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights, resulting in the essence of change (visualized with a circle pack figure at right). The left and right key value tables show the number of occurrences of each item and its respective weight, respectively.}
+    \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights, resulting in the essence of change (visualized with a circle pack figure at bottom right). Vectors show (above) the number of occurrences and (below) weighted occurrence counts.}
 \end{figure}
 
 Our main requirement is that our datapoints summarize the key changes in ASTDiffs---a datapoint should foreground the most important change in a diff. For instance, the purple (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description is the most useful one, and we designed our weighting scheme to encode this value judgment.

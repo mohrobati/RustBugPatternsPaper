@@ -41,11 +41,11 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
     
     
 
-\subsection{Attributes}
+\subsubsection{Attributes}
 
 Attributes in Rust enable developers to add metadata to program elements. Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. \\
 
-\noindent \textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
+\noindent\textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 // G.attr.struct.add: Adding attributes to a struct
@@ -68,9 +68,9 @@ pub struct Call {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: (G.attr.struct.add) adding attributes to the struct; (G.attr.struct.drop) removing attributes from the struct; and (G.attr.struct.change) changing the content of an existing attribute. These attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: (G.attr.struct.add) adding attributes to the struct; (G.attr.struct.drop) removing attributes from the struct; and (G.attr.struct.change) changing the content of an existing attribute. These attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
 
-\noindent \textit{ \textbf{G.attr.struct.field} Modifying the attributes of struct fields}
+\noindent\textit{\textbf{G.attr.struct.field} Modifying the attributes of struct fields}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 // G.attr.struct.field.add: Adding attributes to struct fields
@@ -96,11 +96,11 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
 % this last sentence immediately prior to here has too many moving parts
 
-\subsection{Struct} 
-\noindent \textit{ \textbf{G.struct.field} Adding/Removing a struct field}
+\subsubsection{Struct} 
+\noindent\textit{\textbf{G.struct.field} Adding/Removing a struct field}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 // G.struct.field.add: Adding a new field to a struct
@@ -116,9 +116,9 @@ struct SnapshotService<U, R> {
 }
 \end{lstlisting}
 
-\noindent \textbf{Description:} A set of new fields are added to or removed from an existing struct. A developer adds a new field to store a new piece of data in a struct. A developer removes a field when the developer realizes that the field is not required with respect to the behaviour they want to implement (possibly because they have moved it elsewhere). \\
+\noindent\textbf{Description:} A set of new fields are added to or removed from an existing struct. A developer adds a new field to store a new piece of data in a struct. A developer removes a field when the developer realizes that the field is not required with respect to the behaviour they want to implement (possibly because they have moved it elsewhere). \\
 
-\noindent \textit{ \textbf{G.struct.field.pub} Modifying the access modifiers of struct fields}
+\noindent\textit{\textbf{G.struct.field.pub} Modifying the access modifiers of struct fields}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 
@@ -138,12 +138,12 @@ pub struct Languages {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in a bug fixing change, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes.
+\noindent\textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in a bug fixing change, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes.
 
-\subsection{Option}
+\subsubsection{Option}
 \vspace{3mm}
 
-\noindent \textit{ \textbf{G.option} Changing field type T to T$\langle$Option$\rangle$}
+\noindent\textit{\textbf{G.option} Changing field type T to T$\langle$Option$\rangle$}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 
@@ -157,15 +157,15 @@ pub struct MediaRule {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If we want a variable to contain null, we would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that our variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
+\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If we want a variable to contain null, we would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that our variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
 
 For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. So, as shown in the code snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
 
 
-\subsection{Types}
+\subsubsection{Types}
 \vspace{3mm}
 
-\noindent \textit{\label{sec:G.type.field}\textbf{G.type.field} Changing a struct field type}
+\noindent\textit{\label{sec:G.type.field}\textbf{G.type.field} Changing a struct field type}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 pub struct Manifest {
@@ -175,10 +175,10 @@ pub struct Manifest {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement. \\
+\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement. \\
 % maybe discuss the specific example a bit?
 
-\noindent \textit{ \textbf{G.type.generic} Changing a generic type parameter}
+\noindent\textit{\textbf{G.type.generic} Changing a generic type parameter}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 #[derive(Debug, Clone, PartialEq)]
@@ -190,9 +190,9 @@ pub struct Anchor {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} This a change of the type parameter of a struct field. As with \textit{\textbf{G.type.field}}, this change can also happen for the mentioned reasons. \\
+\noindent\textbf{Description:} This a change of the type parameter of a struct field. As with \textit{\textbf{G.type.field}}, this change can also happen for the mentioned reasons. \\
 
-\noindent \textit{ \textbf{G.type.enum.variant} Change in enum variant value type}
+\noindent\textit{\textbf{G.type.enum.variant} Change in enum variant value type}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -204,10 +204,10 @@ pub enum ResolvedDependency {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} In Rust, developers can specify the type of the value that an enum variant can store. Using this feature, they can avoid having to use a struct along with enum variants. This change pattern is associated with a change in enum variant types. \\
+\noindent\textbf{Description:} In Rust, developers can specify the type of the value that an enum variant can store. Using this feature, they can avoid having to use a struct along with enum variants. This change pattern is associated with a change in enum variant types. \\
 
 
-\noindent \textit{ \textbf{G.type.tuple} Changing the type inside a tuple}
+\noindent\textit{\textbf{G.type.tuple} Changing the type inside a tuple}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 #[allow(dead_code)]
@@ -221,10 +221,10 @@ pub struct CoreState {
 
 
 
-\noindent \textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a smaller-arity tuple.
+\noindent\textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a smaller-arity tuple.
 
-\subsection{Traits}
-\noindent \textit{ \textbf{G.trait.bound} TraitBound Change}
+\subsubsection{Traits}
+\noindent\textit{\textbf{G.trait.bound} TraitBound Change}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 -- pub struct EventLoop<T: tty::EventedReadWrite> {
@@ -235,7 +235,7 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
+\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
 
 \subsection{\label{sec:bc_patterns}BC-Related Bug Fix Patterns (RQ3)}
 
@@ -262,7 +262,7 @@ Vector & BC.vec.slice  & 8 & 6                                    \\\cline{1-4}
 
 \subsubsection{Clone}
 
-\noindent \textit{ \textbf{BC.clone.drop} Removing clone}
+\noindent\textit{\textbf{BC.clone.drop} Removing clone}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 start_plugin_process(
@@ -273,22 +273,22 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent \textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
 
-\noindent \textit{ \textbf{BC.clone.ref} Dropping clone and adding borrowing}
+\noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 -- let field_id = schema.get_or_create(attribute.clone())?;
 ++ let field_id = schema.get_or_create(&attribute)?;
 \end{lstlisting}
 
-\noindent \textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
+\noindent\textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
 
 Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
 
 \subsubsection{Ref and Deref}
 
-\noindent \textit{ \textbf{BC.ref.add} Adding Borrowing}
+\noindent\textit{\textbf{BC.ref.add} Adding Borrowing}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 let repo = replace(&mut *contents, Processing).inner_repo();
@@ -296,11 +296,11 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 ++ let statuses = repo_to_statuses(&repo, &self.workdir);
 \end{lstlisting}
 
-\noindent \textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
+\noindent\textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
 
 To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git\_branches.rs}}, the developer borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation (\verb+remove_dir_all(repo_dir)+) which fixes a bug. \\
 
-\noindent \textit{ \textbf{BC.ref.drop} Removing Borrowing}
+\noindent\textit{\textbf{BC.ref.drop} Removing Borrowing}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 enums.iter().for_each(|e| {
@@ -311,10 +311,10 @@ enums.iter().for_each(|e| {
 });
 \end{lstlisting}
 
-\noindent \textbf{Description:} In the pattern, an unnecessary borrowing is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function. \\
+\noindent\textbf{Description:} In the pattern, an unnecessary borrowing is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function. \\
 
 
-\noindent \textit{ \textbf{BC.deref.to\_string()} Modification in dereferencing a string prior to calling to\_string()}
+\noindent\textit{\textbf{BC.deref.to\_string()} Modification in dereferencing a string prior to calling to\_string()}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 for p in wixobjs {
@@ -331,12 +331,12 @@ let displayed_attributes = schema.clone().map(|s| {
 });
 \end{lstlisting}
 
-\noindent \textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. It is faster and more performance efficient to dereference the object and then call \verb+to_string()+ on it. The deletion case indicates a redundant dereference, thus it is removed.
+\noindent\textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. It is faster and more performance efficient to dereference the object and then call \verb+to_string()+ on it. The deletion case indicates a redundant dereference, thus it is removed.
 
 
 \subsubsection{Mut}
 
-\noindent \textit{ \textbf{BC.mut.add} Adding mutability}
+\noindent\textit{\textbf{BC.mut.add} Adding mutability}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 parser::Parser::new(args)
@@ -348,20 +348,20 @@ parser::Parser::new(args)
         })?
 \end{lstlisting}
 
-\noindent \textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour. \\
+\noindent\textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour. \\
 
-\noindent \textit{ \textbf{BC.mut.drop} Dropping mutability}
+\noindent\textit{\textbf{BC.mut.drop} Dropping mutability}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 -- let mut tx = tx.clone();
 ++ let tx = tx.clone();
 \end{lstlisting}
 
-\noindent \textbf{Description:} Dropping the mut keyword before a variable, as we do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed through this tool.
+\noindent\textbf{Description:} Dropping the mut keyword before a variable, as we do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed through this tool.
 
 \subsubsection{Vector}
 
-\noindent \textit{ \textbf{BC.vec.slice} Changing a Vec reference to Slice}
+\noindent\textit{\textbf{BC.vec.slice} Changing a Vec reference to Slice}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 pub fn expand_delimited_square(
@@ -371,10 +371,10 @@ pub fn expand_delimited_square(
     // body
 }
 \end{lstlisting}
-\noindent \textbf{Description:} In struct field definition or the types of the function formal parameters, type \verb+&Vec<T>+ changes to \verb+&[T]+. Clippy can detect the opportunity to apply this pattern. The reason is reducing type complication, as slice types in the form of \verb+&[T]+ or \verb+&str+ are usually sufficient for most use cases. 
+\noindent\textbf{Description:} In struct field definition or the types of the function formal parameters, type \verb+&Vec<T>+ changes to \verb+&[T]+. Clippy can detect the opportunity to apply this pattern. The reason is reducing type complication, as slice types in the form of \verb+&[T]+ or \verb+&str+ are usually sufficient for most use cases. 
 
 \subsubsection{Lifetime}
-\noindent \textit{ \textbf{BC.lifetime.static.drop} Dropping static lifetime}
+\noindent\textit{\textbf{BC.lifetime.static.drop} Dropping static lifetime}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 -- const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
@@ -382,5 +382,5 @@ pub fn expand_delimited_square(
 
 \end{lstlisting}
 
-\noindent \textbf{Description:} Removing the static keyword from a const variable declaration. This change can be applied using Clippy. If the presence of static is not required, it is better that we omit it as keeping it might create complicate types in our program.
+\noindent\textbf{Description:} Removing the static keyword from a const variable declaration. This change can be applied using Clippy. If the presence of static is not required, it is better that we omit it as keeping it might create complicate types in our program.
 
