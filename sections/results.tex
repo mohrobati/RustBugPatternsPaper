@@ -2,7 +2,7 @@ In this section, we present the clusters of fix patterns that we found in our da
 
 \subsection{Evaluating the data modelling approach (RQ1)}
 
-\textbf{RQ1. Does our data modelling approach capture the most important aspect of program changes?} 
+\textbf{Does our data modelling approach capture the most important aspect of program changes?} 
 
 As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST (alongside some BC-related elements). Here we want to evaluate the effectiveness of our encoding.
 
@@ -18,7 +18,9 @@ We carried out two manual experiments for evaluating our encoding mechanism. In 
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
-{\bf There is no text in this subsection.} 
+\textbf{What are the general fix patterns in Rust, and how often do they apply?} 
+
+We collected 60583 datapoints for general fix patterns using a server with Xeon Gold 5120 Processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to complete for both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis as described in~\ref{sec:manual_analysis_cluster_selection} we ended up with 10 general patterns which we introduce here:
 
 \begin{table}[]
 
@@ -238,6 +240,10 @@ pub struct CoreState {
 \noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
 
 \subsection{\label{sec:bc_patterns}BC-Related Bug Fix Patterns (RQ3)}
+
+\textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
+
+We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis as described in~\ref{sec:manual_analysis_cluster_selection} we ended up with 9 borrow-checker related fix patterns which we introduce here:
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
