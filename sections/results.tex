@@ -6,7 +6,7 @@ In this section, we present the clusters of fix patterns that we found in our da
 
 As discussed in the previous section, we used an encoding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while encoding our datapoints to make the most important program elements stand out between all the non terminals seen in the AST (alongside some BC-related elements). Here we want to evaluate the effectiveness of our encoding.
 
-The general idea for our evaluation is whether the most important program elements get the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point \cite{collins2003circle}. For this purpose, we used the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (similar to Figure~\ref{fig:essence}).
+The general idea for our evaluation is whether the most important program elements get the high values in our encoding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point~\cite{collins2003circle}. For this purpose, we used the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our encoding (similar to Figure~\ref{fig:essence}).
 
 We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
 
@@ -51,20 +51,20 @@ Attributes in Rust enable developers to add metadata to program elements. Develo
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 // G.attr.struct.add: Adding attributes to a struct
-++ #[derive(Debug, Clone)]
+<@\textcolor{green}{++}@> #[derive(Debug, Clone)]
 pub struct Call {
 /// body 
 }
 
 //G.attr.struct.drop: Removing attributes from a struct
--- #[derive(Debug, Clone)]
+<@\textcolor{red}{--}@> #[derive(Debug, Clone)]
 pub struct Call {
 /// body 
 }
 
 // G.attr.struct.change: Changing an existing attribute of a struct
--- #[derive(Debug)]
-++ #[derive(Debug, Clone)]
+<@\textcolor{red}{--}@> #[derive(Debug)]
+<@\textcolor{green}{++}@> #[derive(Debug, Clone)]
 pub struct Call {
 /// body 
 }
@@ -78,22 +78,22 @@ pub struct Call {
 // G.attr.struct.field.add: Adding attributes to struct fields
 #[derive(Serialize)]
 pub struct Retain {
-    ++ #[serde(skip_serializing_if = "is_empty")]
+    <@\textcolor{green}{++}@> #[serde(skip_serializing_if = "is_empty")]
     pub attributes: Option<Attributes>,
 }
 
 // G.attr.struct.field.drop: Removing attributes from struct fields
 #[derive(Serialize)]
 pub struct Retain {
-    -- #[serde(skip_serializing_if = "Option::is_none")]
+    <@\textcolor{red}{--}@> #[serde(skip_serializing_if = "Option::is_none")]
     pub attributes: Option<Attributes>,
 }
 
 // G.attr.struct.field.change: Changing attributes of struct fields
 #[derive(Serialize)]
 pub struct Retain {
-    -- #[serde(skip_serializing_if = "Option::is_none")]
-    ++ #[serde(skip_serializing_if = "is_empty")]
+    <@\textcolor{red}{--}@> #[serde(skip_serializing_if = "Option::is_none")]
+    <@\textcolor{green}{++}@> #[serde(skip_serializing_if = "is_empty")]
     pub attributes: Option<Attributes>,
 }
 \end{lstlisting}
@@ -126,15 +126,15 @@ struct SnapshotService<U, R> {
 
 // G.struct.field.pub.add: Adding pub to a field
 pub struct HtmlBlock {
-    -- content: BlockContent,
-    ++ pub content: BlockContent,
+    <@\textcolor{red}{--}@> content: BlockContent,
+    <@\textcolor{green}{++}@> pub content: BlockContent,
     brace: token::Brace,
 } 
 
 // G.struct.field.pub.drop: Removing pub from a field
 pub struct Languages {
---  pub named: HashMap<LanguageId, Arc<LanguageDefinition>>,
-++  named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+<@\textcolor{red}{--}@>  pub named: HashMap<LanguageId, Arc<LanguageDefinition>>,
+<@\textcolor{green}{++}@>  named: HashMap<LanguageId, Arc<LanguageDefinition>>,
     extensions: HashMap<String, Arc<LanguageDefinition>>,
 }
 
@@ -152,8 +152,8 @@ pub struct Languages {
 #[ast_node("MediaRule")]
 pub struct MediaRule {
     pub span: Span,
-    -- pub media: MediaQueryList,
-    ++ pub media: Option<MediaQueryList>,
+    <@\textcolor{red}{--}@> pub media: MediaQueryList,
+    <@\textcolor{green}{++}@> pub media: Option<MediaQueryList>,
     pub rules: Vec<Rule>,
 }
 
@@ -171,8 +171,8 @@ For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript 
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 pub struct Manifest {
-  -- pub features: Vec<String>,
-  ++ pub features: HashSet<String>,
+  <@\textcolor{red}{--}@> pub features: Vec<String>,
+  <@\textcolor{green}{++}@> pub features: HashSet<String>,
 }
 
 \end{lstlisting}
@@ -185,8 +185,8 @@ pub struct Manifest {
 \begin{lstlisting}[language=Rust, style=colouredRust]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Anchor {
-    -- point: Point<usize>,
-    ++ point: Point<isize>,
+    <@\textcolor{red}{--}@> point: Point<usize>,
+    <@\textcolor{green}{++}@> point: Point<isize>,
     side: Side,
 }
 
@@ -200,8 +200,8 @@ pub struct Anchor {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedDependency {
   Resolved(ModuleSpecifier),
-  -- Err(String),
-  ++ Err(ResolvedDependencyErr),
+  <@\textcolor{red}{--}@> Err(String),
+  <@\textcolor{green}{++}@> Err(ResolvedDependencyErr),
 }
 
 \end{lstlisting}
@@ -215,8 +215,8 @@ pub enum ResolvedDependency {
 #[allow(dead_code)]
 pub struct CoreState {
     // Other fields
-    -- pending_views: Vec<ViewId>,
-    ++ pending_views: Vec<(ViewId, Table)>,
+    <@\textcolor{red}{--}@> pending_views: Vec<ViewId>,
+    <@\textcolor{green}{++}@> pending_views: Vec<(ViewId, Table)>,
     peer: Client
 }
 \end{lstlisting}
@@ -229,8 +229,8 @@ pub struct CoreState {
 \noindent\textit{\textbf{G.trait.bound} TraitBound Change}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
--- pub struct EventLoop<T: tty::EventedReadWrite> {
-++ pub struct EventLoop<T: tty::EventedPty> {
+<@\textcolor{red}{--}@> pub struct EventLoop<T: tty::EventedReadWrite> {
+<@\textcolor{green}{++}@> pub struct EventLoop<T: tty::EventedPty> {
     poll: mio::Poll,
     // Other fields
 }
@@ -272,8 +272,8 @@ Vector & BC.vec.slice  & 8 & 6                                    \\\cline{1-4}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 start_plugin_process(
---  manifest.clone(),
-++  manifest,
+<@\textcolor{red}{--}@>  manifest.clone(),
+<@\textcolor{green}{++}@>  manifest,
     self.next_plugin_id(),
     self.self_ref.as_ref().unwrap().clone(),
 );
@@ -284,8 +284,8 @@ start_plugin_process(
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
--- let field_id = schema.get_or_create(attribute.clone())?;
-++ let field_id = schema.get_or_create(&attribute)?;
+<@\textcolor{red}{--}@> let field_id = schema.get_or_create(attribute.clone())?;
+<@\textcolor{green}{++}@> let field_id = schema.get_or_create(&attribute)?;
 \end{lstlisting}
 
 \noindent\textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
@@ -298,8 +298,8 @@ Similar to the previous pattern, this does not change the program behaviour and 
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 let repo = replace(&mut *contents, Processing).inner_repo();
--- let statuses = repo_to_statuses(repo, &self.workdir);
-++ let statuses = repo_to_statuses(&repo, &self.workdir);
+<@\textcolor{red}{--}@> let statuses = repo_to_statuses(repo, &self.workdir);
+<@\textcolor{green}{++}@> let statuses = repo_to_statuses(&repo, &self.workdir);
 \end{lstlisting}
 
 \noindent\textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
@@ -311,8 +311,8 @@ To give an example, in starship/starship after one of the commits \footnote{\url
 \begin{lstlisting}[language=Rust, style=colouredRust]
 enums.iter().for_each(|e| {
     let mut enum_template = EnumTemplate::new();
-    -- enum_template.set_message_enum(&e);
-    ++ enum_template.set_message_enum(e);
+    <@\textcolor{red}{--}@> enum_template.set_message_enum(&e);
+    <@\textcolor{green}{++}@> enum_template.set_message_enum(e);
     // Other statements
 });
 \end{lstlisting}
@@ -324,15 +324,15 @@ enums.iter().for_each(|e| {
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 for p in wixobjs {
---  args.push(p.to_string());
-++  args.push((*p).to_string());
+<@\textcolor{red}{--}@>  args.push(p.to_string());
+<@\textcolor{green}{++}@>  args.push((*p).to_string());
 }
 
 let displayed_attributes = schema.clone().map(|s| {
     s.displayed_name()
         .iter()
---      .map(|s| (*s).to_string())
-++      .map(|s| s.to_string())
+<@\textcolor{red}{--}@>      .map(|s| (*s).to_string())
+<@\textcolor{green}{++}@>      .map(|s| s.to_string())
         .collect::<HashSet<String>>()
 });
 \end{lstlisting}
@@ -347,8 +347,8 @@ let displayed_attributes = schema.clone().map(|s| {
 \begin{lstlisting}[language=Rust, style=colouredRust]
 parser::Parser::new(args)
         .parse_module()
---      .map_err(|e| {
-++      .map_err(|mut e| {
+<@\textcolor{red}{--}@>      .map_err(|e| {
+<@\textcolor{green}{++}@>      .map_err(|mut e| {
             e.emit();
             ()
         })?
@@ -359,8 +359,8 @@ parser::Parser::new(args)
 \noindent\textit{\textbf{BC.mut.drop} Dropping mutability}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
--- let mut tx = tx.clone();
-++ let tx = tx.clone();
+<@\textcolor{red}{--}@> let mut tx = tx.clone();
+<@\textcolor{green}{++}@> let tx = tx.clone();
 \end{lstlisting}
 
 \noindent\textbf{Description:} Dropping the mut keyword before a variable, as we do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed through this tool.
@@ -371,8 +371,8 @@ parser::Parser::new(args)
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 pub fn expand_delimited_square(
---  children: &Vec<TokenNode>,
-++  children: &[TokenNode],
+<@\textcolor{red}{--}@>  children: &Vec<TokenNode>,
+<@\textcolor{green}{++}@>  children: &[TokenNode],
 ) -> Result<hir::Expression, ParseError> {
     // body
 }
@@ -383,8 +383,8 @@ pub fn expand_delimited_square(
 \noindent\textit{\textbf{BC.lifetime.static.drop} Dropping static lifetime}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
--- const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
-++ const QUEUE_SIZES: &[u16] = &[QUEUE_SIZE];
+<@\textcolor{red}{--}@> const QUEUE_SIZES: &'static [u16] = &[QUEUE_SIZE];
+<@\textcolor{green}{++}@> const QUEUE_SIZES: &[u16] = &[QUEUE_SIZE];
 
 \end{lstlisting}
 
