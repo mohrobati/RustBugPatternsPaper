@@ -290,7 +290,7 @@ start_plugin_process(
 
 \noindent\textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
 
-Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
+Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits~\footnote{\url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
 
 \subsubsection{Ref and Deref}
 
@@ -304,7 +304,7 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 
 \noindent\textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
 
-To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}{git\_branches.rs}}, the developer borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation (\verb+remove_dir_all(repo_dir)+) which fixes a bug. \\
+To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}}, the developer borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation (\verb+remove_dir_all(repo_dir)+) which fixes a bug. \\
 
 \noindent\textit{\textbf{BC.ref.drop} Removing Borrowing}
 
