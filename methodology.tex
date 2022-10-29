@@ -8,7 +8,7 @@ To compute the contents of a change, we need two code revisions: the revision be
 
 An ASTDiff may include an arbitrary number of semantic changes, although a best practice is to include only one semantic change in a commit. Because that best practice is not universally followed, we are interested in finding the most important change within an ASTDiff, and embedding that change in our datapoints. Sections~\ref{sec:path_extraction}~and~\ref{sec:weighting_scheme} provide a detailed explanation of how we select the most important semantic information, which then allowed us to obtain clusters that contained similar datapoints. 
 
-Our target repositories were the top 18 most-starred open source Rust projects on GitHub. We mined (using Pydriller~\cite{spadini2018pydriller}) all the bug related commits and ran them through our pipeline. Then, we applied the DBSCAN clustering algorithm~\cite{ester1996density} on the resulting datapoints. In Section~\ref{sec:clustering_data} we justify our choice of DBSCAN for clustering, and we explain how we tuned it to improve cluster quality. 
+Our target repositories were the top 18 most-starred open source Rust projects on GitHub. We mined (using Pydriller) all the bug related commits and ran them through our pipeline. We will provide more details on the aforementioned process later. Then, we applied the DBSCAN clustering algorithm~\cite{ester1996density} on the resulting datapoints. In Section~\ref{sec:clustering_data} we justify our choice of DBSCAN for clustering, and we explain how we tuned it to improve cluster quality. 
 
 \subsection{\label{sec:data_modelling}Data modelling}
 
@@ -260,7 +260,7 @@ In our methodology, we propose a novel representation. Similar to the first appr
         };
         
         \node[draw=none] (circlepack) at (10.5,-6.2)
-            {\includegraphics[width=0.7\textwidth]{figs/circlepack.png}};
+            {\includegraphics[width=0.7\textwidth]{circlepack.png}};
             
         
         \node[draw=none] at (9,-2.3) {Visualizing Essence};
@@ -313,7 +313,7 @@ Multiplying the number of occurrences of all observed items in a change by their
 
 Now that we have set up our code analysis pipeline, we can start mining the Rust repositories. We target the top 18 most-starred Rust projects on GitHub, at the time of data collection. Table~\ref{table:repos} summarizes our benchmarks. Because we are interested in changes, we computed the average code churn of the files within the projects (The code churn is computed using process metrics provided by Pydriller). denoland/deno and swc-project/swc are the projects with largest number of LOCs and highest average code churn, respectively. Unsurprisingly, we captured a lot of instances from these two projects in our final clusters.
 
-We used the Pydriller library to mine software repositories. Pydriller provides APIs to extract commits from a Git repository and to search through different revisions of files. Algorithm~\ref{alg} shows how we used Pydriller to run the target repositories through our code analysis pipeline and populate two databases: one for borrow-checker related patterns (which involve items in \texttt{BCE}) and one for general patterns (which don't). For each repository, we search all commits that include bug-fixing related keywords within their commit messages. Here, we chose bug-fixing related keywords based on the set introduced in~\cite{zhang2018empirical}, excluding `nan' and `inf'. 
+We used the Pydriller~\cite{spadini2018pydriller} library to mine software repositories. Pydriller provides APIs to extract commits from a Git repository and to search through different revisions of files. Algorithm~\ref{alg} shows how we used Pydriller to run the target repositories through our code analysis pipeline and populate two databases: one for borrow-checker related patterns (which involve items in \texttt{BCE}) and one for general patterns (which don't). For each repository, we search all commits that include bug-fixing related keywords within their commit messages. Here, we chose bug-fixing related keywords based on the set introduced in~\cite{zhang2018empirical}, excluding `nan' and `inf'. 
 
 
 Next, we collect a pair of revisions for each Rust file. The pair includes the state of the file before the commit and after the commit ($f_a, f_b$). After parsing each revision and computing the ASTDiff, we can compute the fixed sized datapoint $\mathit{DP}$. If the datapoint contains borrow-checker related keywords, we put it in the BC-related database $D_b$; otherwise, we put it in the general code changes database $D_g$. In both cases, we augment the datapoint with the commit hash, filename, and the scope in which the change happened. For BC-related code changes, we also store the detected BC-related keywords. Now our databases are ready for clustering and categorization.
@@ -356,7 +356,7 @@ DBSCAN takes two tuneable parameters. The first parameter $\epsilon$ indicates a
 % TODO fix this caption
 \begin{figure}[h]
 \centering
-\includegraphics[width=1\textwidth]{figs/clusters.pdf}
+\includegraphics[width=1\textwidth]{clusters.pdf}
 \caption{\label{fig:clustering} Clustering results with nine different combinations of parameters $\epsilon$ and $Z$, respectively separated in columns and rows. In each subplot, the two blue bars in the left respectively indicate the number of clustered and noise datapoints (the number is shown above each bar) after applying clustering on $D_g$ (denoted with $G_c$ and $G_n$ on the x axis). The two orange bars in the right show similar data but for the $D_{b}$ database. In each subplot's legend, $C_G$ and $C_B$ show the number of clusters obtained from $D_g$ and $D_b$, respectively}
 \end{figure}
 
