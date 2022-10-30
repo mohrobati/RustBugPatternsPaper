@@ -4,23 +4,23 @@ In this section, we present the clusters of fix patterns that we found in our da
 
 \textbf{Does our data modelling approach capture the most important aspect of program changes?} 
 
-As discussed in the previous section, we used an embedding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (weighting scheme) while creating our datapoints to make the most important program elements stand out between all the non terminals seen in the AST (alongside some BC-related elements). Here we want to evaluate the effectiveness of our code embedding.
+As discussed in the previous section, we used an embedding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (a weighting scheme) while creating our datapoints to make the most important program elements stand out from all the non terminals seen in the AST (along with some BC-related elements). Here we evaluate the effectiveness of our code embedding.
 
-The general idea for our evaluation is whether the most important program elements get the high values in our embedding. The analyzer compares the actual change in the code and compares it to the visual representation of its respective data point. We used circle pack figures to visualize each data point~\cite{collins2003circle}. For this purpose, we used the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our embedding (similar to Figure~\ref{fig:essence}).
+The general idea for our evaluation is determining whether the most important program elements get high values in our embedding, i.e. are recognized as important. The analyzer compares the actual change in the code and compares it to the visual representation of the respective data point. We used circle pack figures to visualize each data point~\cite{collins2003circle}, generated with the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our embedding (as seen in Figure~\ref{fig:essence}).
 
 We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
 
-We carried out two manual experiments for evaluating our embedding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carried out these experiments independently. At last, we report the results as the portion of the changes which both authors agreed upon its embedding correctness. The final results are 54\% and 80\% correctness in the first and second experiments, respectively.
+\todo[inline]{Can we justify the 50, both here and in the previous section?}
 
-% no, you have to compute the intersection
-% when is our approach effective and when is it not?
-% more detailed stats would probably be good too
+We carried out two manual experiments for evaluating our embedding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carried out these experiments independently. We report the results as the portion of the changes which both authors agreed upon its embedding correctness. The final results are 54\% and 80\% correctness in the first and second experiments, respectively.
+
+\todo[inline]{no, you have to compute the intersection. when is our approach effective and when is it not? more detailed stats would probably be good too}
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
 \textbf{What are the general fix patterns in Rust, and how often do they apply?} 
 
-We collected 60583 datapoints for general fix patterns using a server with Xeon Gold 5120 Processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to complete for both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis as described in~\ref{sec:manual_analysis_cluster_selection} we ended up with 10 general patterns which we introduce here:
+We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 10 general patterns, which we introduce below.
 
 \begin{table}[]
 
@@ -99,7 +99,7 @@ pub struct Retain {
 \end{lstlisting}
 
 \noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
-% this last sentence immediately prior to here has too many moving parts
+\todo{this last sentence immediately prior to here has too many moving parts}
 
 \subsubsection{Struct} 
 \noindent\textit{\textbf{G.struct.field} Adding/Removing a struct field}
@@ -159,9 +159,9 @@ pub struct MediaRule {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If we want a variable to contain null, we would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that our variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
+\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain null, they would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that a variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
 
-For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code in a way that it accounts for empty @media queries \footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. So, as shown in the code snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
+For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
 
 
 \subsubsection{Types}
@@ -177,8 +177,8 @@ pub struct Manifest {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also it can happen for refactoring purposes or performance enhancement. \\
-% maybe discuss the specific example a bit?
+\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also, it can happen for refactoring purposes or performance enhancement. \\
+\todo{maybe discuss the specific example a bit?}
 
 \noindent\textit{\textbf{G.type.generic} Changing a generic type parameter}
 
@@ -192,7 +192,7 @@ pub struct Anchor {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} This a change of the type parameter of a struct field. As with \textit{\textbf{G.type.field}}, this change can also happen for the mentioned reasons. \\
+\noindent\textbf{Description:} This is a change of the type parameter of a struct field. This change pattern can occur for the same reasons as for \textit{\textbf{G.type.field}}. \\
 
 \noindent\textit{\textbf{G.type.enum.variant} Change in enum variant value type}
 
@@ -237,13 +237,13 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modification in trait bounds. This can happen both for bug fix reasons or just refactoring purposes.
+\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modifications in trait bounds. This can happen as part of bug fixes or for refactoring.
 
 \subsection{\label{sec:bc_patterns}BC-Related Bug Fix Patterns (RQ3)}
 
 \textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
 
-We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis as described in~\ref{sec:manual_analysis_cluster_selection} we ended up with 9 borrow-checker related fix patterns which we introduce here:
+We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 9 borrow-checker related fix patterns, which we introduce here:
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
@@ -268,7 +268,7 @@ Vector & BC.vec.slice  & 8 & 6                                    \\\cline{1-4}
 
 \subsubsection{Clone}
 
-\noindent\textit{\textbf{BC.clone.drop} Removing clone}
+\noindent\textit{\textbf{BC.clone.drop} Dropping clone}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 start_plugin_process(
@@ -279,7 +279,9 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary and could we have used the variable itself or not. This change does not modify the program behaviour, however it can boost the performance significantly if we repeatedly cloning large variables. 
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary, i.e. could the developer have used the variable itself or not. This change does not modify the program behaviour, but it can boost the performance significantly if the program was repeatedly cloning large variables. \\
+
+\todo[inline]{I think you should talk more about ``does not modify program behaviour''. For instance after you make this change the program may no longer compile. Is it true that, if it compiles, behaviour is preserved?}
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
@@ -288,9 +290,9 @@ start_plugin_process(
 <@\textcolor{green}{++}@> let field_id = schema.get_or_create(&attribute)?;
 \end{lstlisting}
 
-\noindent\textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when the programmers realizes that the cloning of a variable is unnecessary, however, we also want to preserve the ownership of the variable within the current scope. That is why in this pattern a clone is turned into a borrowing. 
+\noindent\textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when a developer realizes that the cloning of a variable is unnecessary, but also wants to keep the ownership of the variable within the current scope (rather than passing it to a callee). That is why, in this pattern, a clone is turned into a borrow. 
 
-Similar to the previous pattern, this does not change the program behaviour and is merely for performance purposes. It was the case in one of the commits~\footnote{\url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, where the clone to borrowing significantly optimized CPU usage. They discussed that the cloning of some types such as HashMap was expensive. \\
+Like the previous pattern, this change does not affect the program behaviour; it is done for performance purposes. In one of the commits\footnote{\scriptsize \url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, changing a clone to borrowing significantly improved CPU usage. In the commit history, developers discussed how the cloning of types such as HashMap was expensive. \\
 
 \subsubsection{Ref and Deref}
 
@@ -302,9 +304,9 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 <@\textcolor{green}{++}@> let statuses = repo_to_statuses(&repo, &self.workdir);
 \end{lstlisting}
 
-\noindent\textbf{Description:} This change happens when the developer needs to modify the program so it reaches the desired behaviour. The modification, however, requires access to an object whose ownership has moved to another scope and never returned. That is why we must use borrowing to preserve ownership within our scope, after the function execution finishes.
+\noindent\textbf{Description:} This change pattern happens when the developer now needs to take back ownership of an object that was previously passed to a callee (or other scope) and never returned. Borrowing allows the first scope to once again act on the object.
 
-To give an example, in starship/starship after one of the commits \footnote{\url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}}, the developer borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. Now this object can then be used in another function invocation (\verb+remove_dir_all(repo_dir)+) which fixes a bug. \\
+To give an example, the commit in starship/starship excerpted above\footnote{\scriptsize \url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}} shows that the developer now borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. This object can then be used in a subsequent function invocation (\verb+remove_dir_all(repo_dir)+), which fixes a bug. \\
 
 \noindent\textit{\textbf{BC.ref.drop} Removing Borrowing}
 
@@ -317,10 +319,10 @@ enums.iter().for_each(|e| {
 });
 \end{lstlisting}
 
-\noindent\textbf{Description:} In the pattern, an unnecessary borrowing is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function. \\
+\noindent\textbf{Description:} In this pattern, an unnecessary borrow is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function. \\
+\todo[inline]{I don't see why this improves performance, it should be a 0 cost operation at runtime to return ownership or not.}
 
-
-\noindent\textit{\textbf{BC.deref.to\_string()} Modification in dereferencing a string prior to calling to\_string()}
+\noindent\textit{\textbf{BC.deref.to\_string()} Adding or removing a dereference operation before calling to\_string()}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 for p in wixobjs {
@@ -337,7 +339,8 @@ let displayed_attributes = schema.clone().map(|s| {
 });
 \end{lstlisting}
 
-\noindent\textbf{Description:} This is a change that in all the instances has been detected by Clippy. The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. In the addition case, the reason behind the change is that the object a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. It is faster and more performance efficient to dereference the object and then call \verb+to_string()+ on it. The deletion case indicates a redundant dereference, thus it is removed.
+\todo[inline]{Can you clarify ``has been detected by Clippy''? Did you run Clippy? You didn't talk about that in your methodology.}
+\noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy. The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. When adding a dereference, the reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. It is faster and more performance efficient to dereference the object and then call \verb+to_string()+ on it. The deletion case indicates a redundant dereference, thus it is removed.\todo{I don't understand the adding change.}
 
 
 \subsubsection{Mut}
@@ -354,7 +357,7 @@ parser::Parser::new(args)
         })?
 \end{lstlisting}
 
-\noindent\textbf{Description:} This change happens when the programmer needs to mutate a variable which is immutable, hence they need to add the mut keyword. In the observed instances, this pattern was not seen in refactoring changes, the modification happened alongside a change in program behaviour. \\
+\noindent\textbf{Description:} This change happens when the developer needs to mutate a variable which was previously immutable in a scope---they thus need to add the mut keyword. We never observed this pattern in refactoring changes; it always accompanied a change in program behaviour. \\
 
 \noindent\textit{\textbf{BC.mut.drop} Dropping mutability}
 
@@ -363,7 +366,7 @@ parser::Parser::new(args)
 <@\textcolor{green}{++}@> let tx = tx.clone();
 \end{lstlisting}
 
-\noindent\textbf{Description:} Dropping the mut keyword before a variable, as we do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed through this tool.
+\noindent\textbf{Description:} The developer drops the mut keyword before a variable, as they do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed by it. This change may help future-proof the code against unintended future changes.
 
 \subsubsection{Vector}
 
@@ -377,7 +380,7 @@ pub fn expand_delimited_square(
     // body
 }
 \end{lstlisting}
-\noindent\textbf{Description:} In struct field definition or the types of the function formal parameters, type \verb+&Vec<T>+ changes to \verb+&[T]+. Clippy can detect the opportunity to apply this pattern. The reason is reducing type complication, as slice types in the form of \verb+&[T]+ or \verb+&str+ are usually sufficient for most use cases. 
+\noindent\textbf{Description:} In a struct field definition, or in the types of a function's formal parameters, type \verb+&Vec<T>+ changes to slice \verb+&[T]+. Clippy can detect the opportunity to apply this pattern. This simplifies the code; slice types \verb+&[T]+ or \verb+&str+ are sufficient for most use cases. 
 
 \subsubsection{Lifetime}
 \noindent\textit{\textbf{BC.lifetime.static.drop} Dropping static lifetime}
@@ -388,5 +391,5 @@ pub fn expand_delimited_square(
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} Removing the static keyword from a const variable declaration. This change can be applied using Clippy. If the presence of static is not required, it is better that we omit it as keeping it might create complicate types in our program.
+\noindent\textbf{Description:} This change pattern removes the static keyword from a const variable declaration. This change can be applied using Clippy. If the presence of static is not required, it is better that to omit it, as keeping it might create complicated types in the program.
 
