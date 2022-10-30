@@ -40,7 +40,7 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
 \end{tabular}
 \caption{\label{table:general}Bug Fix Pattern Categorization (General Patterns)}
 \end{table}
-\todo[inline]{There cannot be a table without reference to the table in the text. The reference to the table should also summarize what we've learned from the table.}
+\todo[inline]{There cannot be a table without reference to the table in the text. The reference to the table should also summarize what we've learned from the table. Also do we compare table 2 to what occurs in previous work?}
     
 
 \subsubsection{Attributes}
@@ -161,7 +161,7 @@ pub struct MediaRule {
 
 \noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain null, they would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that a variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
 
-For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
+For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\scriptsize \url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
 
 
 \subsubsection{Types}
