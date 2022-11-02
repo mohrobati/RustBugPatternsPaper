@@ -86,6 +86,7 @@ We parse two versions of a changed Rust file in a commit: the file before the co
     \draw[->]  (c3) -- (c4);
     
     \draw[->]  (c1) -- (d1);
+    \draw[->]  (d1) -- (d2);
     
     \draw [->, red] plot [smooth, tension=1] coordinates { (2,1) (2,-3) (1.4,-5) (1.4,-8.5)};
     
@@ -247,6 +248,7 @@ We propose a novel representation. Similar to the naive approach, we order-insen
         \draw[->]  (c3) -- (c4);
         
         \draw[->]  (c1) -- (d1);
+        \draw[->]  (d1) -- (d2);
         
 
         %% Tables

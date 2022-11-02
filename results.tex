@@ -10,17 +10,19 @@ The general idea for our evaluation is determining whether the most important pr
 
 We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
 
-\todo[inline]{Can we justify the 50, both here and in the previous section?}
+\todo[inline]{Can we justify the 50, both here and in the previous section? ``It was a random number not so large and not too small, how can I justify it?''}
 
 We carried out two manual experiments for evaluating our embedding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carried out these experiments independently. We report the results as the portion of the changes which both authors agreed upon its embedding correctness. The final results are 54\% and 80\% correctness in the first and second experiments, respectively.
 
-\todo[inline]{no, you have to compute the intersection. when is our approach effective and when is it not? more detailed stats would probably be good too}
+Although reporting most important element within the top three elements in 80\% of the cases is an accpectable outcome, we examined our pipeline for the other 20\%. The analysis shows that our pipeline fails in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). It is worth mentioning that these changes tend to be less cross-project as having many changed elements make it easier for datapoints to be dissimlar.
+
+\todo[inline]{no, you have to compute the intersection. ``The numbers reported are the intersection'' when is our approach effective and when is it not? ``added above'' more detailed stats would probably be good too ``what kind of stats do you have in mind?''}
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
 \textbf{What are the general fix patterns in Rust, and how often do they apply?} 
 
-We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 10 general patterns, which we introduce below.
+We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 10 general patterns, which we describe in Table~\ref{table:general}. As it is shown in the table, we have separated the patterns based underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column). Now we provide detailed description for each of these patterns:
 
 \begin{table}[]
 
@@ -36,11 +38,13 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
 \multirow{4}{*}{Types} & G.type.field  & 72 & 14 \\
 & G.type.generic & 46 & 14\\ & G.type.enum.variant  & 39 & 12 \\
 & G.type.tuple & 6 & 6                                         \\\cline{1-4}
-\multirow{1}{*}{Traits} & G.trait.bound & 6 & 5 \\ 
+\multirow{1}{*}{Traits} & G.trait.bound & 6 & 5 \\\cline{1-4}
+\multirow{2}{*}{Match} & G.match.pattern & 41 & 12 \\
+& G.match.code & 8 & 5 \\
 \end{tabular}
 \caption{\label{table:general}Bug Fix Pattern Categorization (General Patterns)}
 \end{table}
-\todo[inline]{There cannot be a table without reference to the table in the text. The reference to the table should also summarize what we've learned from the table. Also do we compare table 2 to what occurs in previous work?}
+\todo[inline]{Also do we compare table 2 to what occurs in previous work? ``What previous work?''}
     
 
 \subsubsection{Attributes}
@@ -98,8 +102,7 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using attributes for struct fields, apart from being able to store different meta-information for different struct fields, for some use cases, the programmers can control the action they want to apply on different fields.
-\todo{this last sentence immediately prior to here has too many moving parts}
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information.
 
 \subsubsection{Struct} 
 \noindent\textit{\textbf{G.struct.field} Adding/Removing a struct field}
@@ -171,14 +174,16 @@ For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript 
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 pub struct Manifest {
-  <@\textcolor{red}{--}@> pub features: Vec<String>,
-  <@\textcolor{green}{++}@> pub features: HashSet<String>,
+  <@\textcolor{red}{--}@> pub substitutions: HashMap<String, &'a str>,
+  <@\textcolor{green}{++}@> pub substitutions: IndexMap<String, &'a str>,
 }
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also, it can happen for refactoring purposes or performance enhancement. \\
-\todo{maybe discuss the specific example a bit?}
+\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also, it can happen for refactoring purposes or performance enhancement. 
+
+For instance, in the Rust project starship/starship (a cross-shell prompt), in order to preserve the insertion order of \verb+substitutions+ field, the developer changes its type from \verb+HashMap+ to \verb+IndexMap+\footnote{\url{https://github.com/starship/starship/commit/4de9e43cff46c834bd340d24a02fc95d85310a33}}.
+\\
 
 \noindent\textit{\textbf{G.type.generic} Changing a generic type parameter}
 
@@ -226,7 +231,7 @@ pub struct CoreState {
 \noindent\textbf{Description:} In this pattern, an extra type is added to an existing type, making it a tuple of multiple types. Alternatively, the change might be dropping types from the tuple and making it a smaller-arity tuple.
 
 \subsubsection{Traits}
-\noindent\textit{\textbf{G.trait.bound} TraitBound Change}
+\noindent\textit{\textbf{G.trait.bound} TraitBound change}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 <@\textcolor{red}{--}@> pub struct EventLoop<T: tty::EventedReadWrite> {
@@ -237,13 +242,39 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modifications in trait bounds. This can happen as part of bug fixes or for refactoring.
+\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modifications in trait bounds. This can happen as part of bug fixes or for refactoring. \\
+
+\subsubsection{Match}
+
+In Rust, match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches with our value. A pattern and its associated code are called a match arm.\\
+
+\noindent\textit{\textbf{G.match.pattern} Change in a match arm's pattern}
+
+\begin{lstlisting}[language=Rust, style=colouredRust]
+<@\textcolor{red}{--}@> Value::Primitive(p) => {
+<@\textcolor{green}{++}@> UntaggedValue::Primitive(p) => {
+    let _ = builder.add_empty_child(p.format(None));
+}
+\end{lstlisting}
+
+\noindent\textbf{Description:} In this pattern, a change occurs in an arm's pattern. Like the code snippet provided above, it can be a change in pattern's type. It also can be matching to a different enum variant or string. The fix pattern can happen both for refactoring or debugging purposes. \\
+
+\noindent\textit{\textbf{G.match.code} Change in a match arm's code}
+
+\begin{lstlisting}[language=Rust, style=colouredRust]
+Operation::Insert(insert) => {
+    <@\textcolor{red}{--}@> inverted.delete(insert.count_of_utf16_code_units());
+    <@\textcolor{green}{++}@> inverted.delete(insert.utf16_size());
+}
+\end{lstlisting}
+
+\noindent\textbf{Description:} The block of code associated with a pattern in match arm can contain multiple statements. In this fix pattern, a change happens in at least one of these statements. Similar to the previous fix pattern, this also can be due to refactoring or debugging purposes.
 
 \subsection{\label{sec:bc_patterns}BC-Related Bug Fix Patterns (RQ3)}
 
 \textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
 
-We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 9 borrow-checker related fix patterns, which we introduce here:
+We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 9 borrow-checker related fix patterns, which we, similar to the previous table, describe in Table~\ref{table:bc}. Here we provide detailed description for each of these patterns:
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
@@ -252,9 +283,8 @@ We collected 27143 datapoints for borrow-checker related fix patterns. We used $
 \multirow{2}{*}{Clone}                                         & BC.clone.drop & 83 & 10 \\
 & BC.clone.ref & 4 & 3   
 \\\cline{1-4}
-\multirow{3}{*}{Ref and Deref} & BC.ref.add & 17 & 7 \\
-& BC.ref.drop & 145 & 14 \\
-& BC.deref.to\_string  & 7 & 4                                            \\\cline{1-4}
+\multirow{2}{*}{Ref and Deref} & BC.ref.add & 17 & 7 \\
+& BC.deref.to\_string.add  & 4 & 3                                            \\\cline{1-4}
 \multirow{2}{*}{Mut} & BC.mut.add  & 11 & 6 \\
 & BC.mut.drop  & 42 & 15                               \\\cline{1-4}
 Vector & BC.vec.slice  & 8 & 6                                    \\\cline{1-4}
@@ -279,9 +309,9 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary, i.e. could the developer have used the variable itself or not. This change does not modify the program behaviour, but it can boost the performance significantly if the program was repeatedly cloning large variables. \\
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary, i.e. could the developer have used the variable itself or not. If the variable clone is indeed redundant, then removing it does not modify the program behaviour, however it can boost the performance significantly if the program was repeatedly cloning large variables. \\
 
-\todo[inline]{I think you should talk more about ``does not modify program behaviour''. For instance after you make this change the program may no longer compile. Is it true that, if it compiles, behaviour is preserved?}
+\todo[inline]{I think you should talk more about ``does not modify program behaviour''. For instance after you make this change the program may no longer compile. Is it true that, if it compiles, behaviour is preserved? ``Yes the assumption is that if the presence of clone() is unnecessary, then removing it would not change the program behaviour''}
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
@@ -308,21 +338,7 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 
 To give an example, the commit in starship/starship excerpted above\footnote{\scriptsize \url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}} shows that the developer now borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. This object can then be used in a subsequent function invocation (\verb+remove_dir_all(repo_dir)+), which fixes a bug. \\
 
-\noindent\textit{\textbf{BC.ref.drop} Removing Borrowing}
-
-\begin{lstlisting}[language=Rust, style=colouredRust]
-enums.iter().for_each(|e| {
-    let mut enum_template = EnumTemplate::new();
-    <@\textcolor{red}{--}@> enum_template.set_message_enum(&e);
-    <@\textcolor{green}{++}@> enum_template.set_message_enum(e);
-    // Other statements
-});
-\end{lstlisting}
-
-\noindent\textbf{Description:} In this pattern, an unnecessary borrow is removed. Clippy can detect the needless borrows, and also can automatically remove them. This does not change the behaviour of the program, however, it does improve the performance, as the borrow checker need not to return the ownership after the execution of the function. \\
-\todo[inline]{I don't see why this improves performance, it should be a 0 cost operation at runtime to return ownership or not.}
-
-\noindent\textit{\textbf{BC.deref.to\_string()} Adding or removing a dereference operation before calling to\_string()}
+\noindent\textit{\textbf{BC.deref.to\_string().add} Adding a dereference operation before calling to\_string()}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 for p in wixobjs {
@@ -339,8 +355,7 @@ let displayed_attributes = schema.clone().map(|s| {
 });
 \end{lstlisting}
 
-\todo[inline]{Can you clarify ``has been detected by Clippy''? Did you run Clippy? You didn't talk about that in your methodology.}
-\noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy. The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. When adding a dereference, the reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. It is faster and more performance efficient to dereference the object and then call \verb+to_string()+ on it. The deletion case indicates a redundant dereference, thus it is removed.\todo{I don't understand the adding change.}
+\noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy (commit messages indicated the use of Clippy for this fix). The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. When adding a dereference, the reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods.
 
 
 \subsubsection{Mut}
