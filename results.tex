@@ -22,7 +22,7 @@ Although reporting most important element within the top three elements in 80\% 
 
 \textbf{What are the general fix patterns in Rust, and how often do they apply?} 
 
-We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 10 general patterns, which we describe in Table~\ref{table:general}. As it is shown in the table, we have separated the patterns based underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column). Now we provide detailed description for each of these patterns:
+We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 12 general patterns, which we describe in Table~\ref{table:general}. As it is shown in the table, we have separated the patterns based underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column). Now we provide detailed description for each of these patterns:
 
 \begin{table}[]
 
@@ -274,7 +274,7 @@ Operation::Insert(insert) => {
 
 \textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
 
-We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 9 borrow-checker related fix patterns, which we, similar to the previous table, describe in Table~\ref{table:bc}. Here we provide detailed description for each of these patterns:
+We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 8 borrow-checker related fix patterns, which we, similar to the previous table, describe in Table~\ref{table:bc}. Here we provide detailed description for each of these patterns:
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
@@ -346,13 +346,6 @@ for p in wixobjs {
 <@\textcolor{green}{++}@>  args.push((*p).to_string());
 }
 
-let displayed_attributes = schema.clone().map(|s| {
-    s.displayed_name()
-        .iter()
-<@\textcolor{red}{--}@>      .map(|s| (*s).to_string())
-<@\textcolor{green}{++}@>      .map(|s| s.to_string())
-        .collect::<HashSet<String>>()
-});
 \end{lstlisting}
 
 \noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy (commit messages indicated the use of Clippy for this fix). The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. When adding a dereference, the reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods.
