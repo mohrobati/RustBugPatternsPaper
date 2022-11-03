@@ -10,13 +10,13 @@ The general idea for our evaluation is determining whether the most important pr
 
 We choose 50 random samples from each of our general and borrow-checker databases. These random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
 
-\todo[inline]{Can we justify the 50, both here and in the previous section? ``It was a random number not so large and not too small, how can I justify it?''}
+\todo[inline]{Can we justify the 50, both here and in the previous section? ``It was a random number not so large and not too small, how can I justify it?'' Ask about calculating error, give yourself more credit for 50 before}
 
 We carried out two manual experiments for evaluating our embedding mechanism. In the first experiment, the analyzer investigates whether the most important element has the largest radius or not. In the second experiment, the analyzer investigates whether the most important element is included in three largest circles or not. The analyzer should give a binary answer to these questions. Both authors carried out these experiments independently. We report the results as the portion of the changes which both authors agreed upon its embedding correctness. The final results are 54\% and 80\% correctness in the first and second experiments, respectively.
 
 Although reporting most important element within the top three elements in 80\% of the cases is an accpectable outcome, we examined our pipeline for the other 20\%. The analysis shows that our pipeline fails in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). It is worth mentioning that these changes tend to be less cross-project as having many changed elements make it easier for datapoints to be dissimlar.
 
-\todo[inline]{no, you have to compute the intersection. ``The numbers reported are the intersection'' when is our approach effective and when is it not? ``added above'' more detailed stats would probably be good too ``what kind of stats do you have in mind?''}
+\todo[inline]{no, you have to compute the intersection. ``The numbers reported are the intersection'' when is our approach effective and when is it not? ``added above'' more detailed stats would probably be good too ``what kind of stats do you have in mind?'' add a table for describing why it didn't work}
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
@@ -44,7 +44,7 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
 \end{tabular}
 \caption{\label{table:general}Bug Fix Pattern Categorization (General Patterns)}
 \end{table}
-\todo[inline]{Also do we compare table 2 to what occurs in previous work? ``What previous work?''}
+\todo[inline]{Also do we compare table 2 to what occurs in previous work? ``What previous work?'' add languages per desc}
     
 
 \subsubsection{Attributes}
@@ -311,7 +311,7 @@ start_plugin_process(
 
 \noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary, i.e. could the developer have used the variable itself or not. If the variable clone is indeed redundant, then removing it does not modify the program behaviour, however it can boost the performance significantly if the program was repeatedly cloning large variables. \\
 
-\todo[inline]{I think you should talk more about ``does not modify program behaviour''. For instance after you make this change the program may no longer compile. Is it true that, if it compiles, behaviour is preserved? ``Yes the assumption is that if the presence of clone() is unnecessary, then removing it would not change the program behaviour''}
+\todo[inline]{I think you should talk more about ``does not modify program behaviour''. For instance after you make this change the program may no longer compile. Is it true that, if it compiles, behaviour is preserved? ``Yes the assumption is that if the presence of clone() is unnecessary, then removing it would not change the program behaviour'' rephrase tautology}
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 

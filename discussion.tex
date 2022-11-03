@@ -2,7 +2,7 @@ In this work, through Ruxanne we successfully mined 20 cross project bug fix pat
 
 In each group, we categorized the bug fix patterns based on the underlying program element. The patterns encompass a wide variety of program elements both in the general and BC-related patterns. This shows that our weighting scheme is acceptably unbiased. Also, the introduced patterns are all cross-project fix patterns. Each fix pattern has been seen at least in three different projects, indicating its commonality.
 
-Furthermore, we expected to obtain certain patterns regarding some certain Rust related features, such as unsafe Rust, but our results did not include those patterns. Our speculation is that, since Rust has a strong compiler check before creating the program executable, the programmers usually get many errors, and they only push their code once it is free of compile errors. That is why, we think there are some patterns that were hidden from our sight.
+Furthermore, we expected to obtain certain patterns regarding some certain Rust related features, such as \verb+move+, but our results did not include those patterns. Our speculation is that, since Rust has a strong compiler check before creating the program executable, the programmers usually get many errors, and they only push their code once it is free of compile errors. That is why, we think there are some patterns that were hidden from our sight.
 
 We believe our results can help researchers to create Rust tools for repair, fault localization, IDE linters, and etc. Also, these results can help program embedding methods to focus on more important aspects of a program and shrink down information more effectively.
 
