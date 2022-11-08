@@ -13,7 +13,7 @@ Our approach for automatically finding pervasive code patterns aims to find clus
 % , encoded in two Python dictionaries; We use dictdiffer to obtain ASTDiffs.
 
 
-We decided to implement Ruxanne completely in Python. Our target repositories were the top 18 most-starred open source Rust projects on GitHub as of August 2021. We mined (using Pydriller) all the bug related commits and ran them through our pipeline; Section~\ref{sec:data_modelling} describes how we extracted fixed-size datapoints from the code changes. Section~\ref{sec:mining} describes our mining methodology in depth. Then, we applied the DBSCAN clustering algorithm~\cite{ester1996density} on the resulting datapoints. Section~\ref{sec:clustering_data} describes clustering in detail, justifies our choice of DBSCAN for clustering, and explains how we tuned it to improve cluster quality. 
+We decided to implement Ruxanne completely in Python. Our target repositories were the top 18 most-starred open source Rust projects on GitHub as of August 2021. We mined (using Pydriller) all the bug related commits and ran them through our pipeline; Section~\ref{sec:data_modelling} describes how we extracted fixed-size datapoints from the code changes, and Section~\ref{sec:mining} describes our mining methodology in depth. Then, we applied the DBSCAN clustering algorithm~\cite{ester1996density} on the resulting datapoints. Section~\ref{sec:clustering_data} describes clustering in detail, justifies our choice of DBSCAN for clustering, and explains how we tuned it to improve cluster quality. 
 
 \subsection{\label{sec:data_modelling}Data modelling}
 
