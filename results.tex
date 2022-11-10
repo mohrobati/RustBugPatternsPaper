@@ -4,7 +4,7 @@ In this section, we present the clusters of fix patterns that we found in our da
 
 \textbf{Does our data modelling approach capture the most important aspect of program changes?} 
 
-As discussed in the previous section, we used an embedding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (a weighting scheme) while creating our datapoints to make the most important program elements stand out from all the non terminals seen in the AST (along with some BC-related elements). Here we evaluate the effectiveness of our code embedding.
+As discussed in the previous section, we used an embedding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (a weighting scheme) while creating our datapoints to make the most impor tant program elements stand out from all the non terminals seen in the AST (along with some BC-related elements). Here we evaluate the effectiveness of our code embedding.
 
 The general idea for our evaluation is determining whether the most important program elements get high values in our embedding, i.e. are recognized as important. The analyzer compares the actual change in the code and compares it to the visual representation of the respective data point. We used circle pack figures to visualize each data point~\cite{collins2003circle}, generated with the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our embedding (as seen in Figure~\ref{fig:essence}).
 
@@ -161,6 +161,9 @@ pub struct Retain {
 \noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information.
 
 \subsubsection{Struct} 
+
+Similar to other languages, such as C, a struct makes it possible for the users to define a custom type that is comprised of different types. The patterns that we describe in this section can also be seen in other languages that use the same concept.
+
 \noindent\textit{\textbf{G.struct.field} Adding/Removing a struct field}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
@@ -224,6 +227,9 @@ For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript 
 
 
 \subsubsection{Types}
+
+Rust is a statically-typed language, and similar to the other statically-typed languages, some of the change patterns are associated with changes in types used in different program structures. Here, we introduce four bug fix patterns that are associated with types in Rust:
+
 \vspace{3mm}
 
 \noindent\textit{\label{sec:G.type.field}\textbf{G.type.field} Changing a struct field type}
@@ -298,11 +304,11 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This change pattern relates to modifications in trait bounds. This can happen as part of bug fixes or for refactoring. \\
+\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This concept might be referred to as interfaces in other languages, although there might be small differences. This change pattern relates to modifications in trait bounds. This can happen as part of bug fixes or for refactoring. \\
 
 \subsubsection{Match}
 
-In Rust, match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches with our value. A pattern and its associated code are called a match arm.\\
+In Rust, match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches with our value. A pattern and its associated code are called a match arm. Match statements can be similar to switch statements in other languages, like C, although match statements in Rust are able to match more complicated patterns.\\
 
 \noindent\textit{\textbf{G.match.pattern} Change in a match arm's pattern}
 
