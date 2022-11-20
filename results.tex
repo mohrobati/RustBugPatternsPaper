@@ -33,11 +33,11 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
     mark=o,
     ]
     coordinates { 
-    (1,72)
-    (2,84)
-    (3,92)
-    (4,96)
-    (5,96)
+    (1,64)
+    (2,72)
+    (3,84)
+    (4,88)
+    (5,92)
     };
     \addlegendentry{General}
 
@@ -47,10 +47,10 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
     ]
     coordinates { 
     (1,68)
-    (2,80)
+    (2,84)
     (3,88)
-    (4,96)
-    (5,100)
+    (4,92)
+    (5,96)
     };
     \addlegendentry{Borrow-Checker}
 
@@ -59,21 +59,21 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
     mark=triangle,
     ]
     coordinates { 
-    (1,70)
-    (2,82)
-    (3,90)
-    (4,96)
-    (5,98)
+    (1,66)
+    (2,78)
+    (3,86)
+    (4,90)
+    (5,94)
     };
     \addlegendentry{Total}
     
 \end{axis}
 \end{tikzpicture}   
-\caption{\label{fig:rq1} Top-$n$ Accuracy of the proposed code embedding approach. The plot shows Top-$n$ Accuracy where $n\in\{1,2,3,4,5\}$ for both general and borrow-checker related datapoints. As shown in the plot, in more than 95\% of the datapoints, the most important element is seen at least in the first four ranks.}
+\caption{\label{fig:rq1} Top-$n$ Accuracy of the proposed code embedding approach. The plot shows Top-$n$ Accuracy where $n\in\{1,2,3,4,5\}$ for both general and borrow-checker related datapoints. As shown in the plot, in more than 85\% of the datapoints, the most important element is seen at least in the first three ranks.}
 
 \end{figure}
 
-Although, on average, reporting most important element within the top three elements in 90\% of the cases is an accpectable outcome, we examined our pipeline for the other 10\%. The analysis shows that our pipeline fails in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). It is worth mentioning that these changes tend to be less cross-project as having many changed elements make it easier for datapoints to be dissimlar.
+Although, on average, reporting most important element within the top four elements in 90\% of the cases is an accpectable outcome, we examined our pipeline for the other 10\%. The analysis shows that our pipeline fails in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). It is worth mentioning that these changes tend to be less cross-project as having many changed elements make it easier for datapoints to be dissimlar.
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
