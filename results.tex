@@ -1,14 +1,14 @@
-In this section, we present the clusters of fix patterns that we found in our data set. \RQBC{} is about the borrow-checker related patterns, while \RQG{} is about general patterns. However, our technique fundamentally relies on our data modelling approach successfully capturing the most important aspects of program changes. We thus first evaluate the data modelling approach as our RQ1, before continuing with \RQBC{} and \RQG{}.
+In this section, we present the clusters of fix patterns that we found in our data set. \RQG{} is about the borrow-checker related patterns, while \RQBC{} is about general patterns. However, our technique fundamentally relies on our data modelling approach successfully capturing the most important aspects of program changes. We thus first evaluate the data modelling approach as our RQ1, before continuing with \RQBC{} and \RQG{}.
 
 \subsection{Evaluating the data modelling approach (RQ1)}
 
 \textbf{Does our data modelling approach capture the most important aspect of program changes?} 
 
-As discussed in the previous section, we used an embedding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (a weighting scheme) while creating our datapoints to make the most impor tant program elements stand out from all the non terminals seen in the AST (along with some BC-related elements). Here we evaluate the effectiveness of our code embedding.
+As discussed in the previous section, we used an embedding mechanism to incorporate AST information in fixed-sized datapoints which then could be used in the DBSCAN clustering algorithm. We used heuristics (a weighting scheme) while creating our datapoints to make the most important program elements stand out from all the non terminals seen in the AST (along with some BC-related elements). Here we evaluate the effectiveness of our code embedding.
 
 The general idea for our evaluation is determining whether the most important program elements get high values in our embedding, i.e. are recognized as important. The analyzer compares the actual change in the code and compares it to the visual representation of the respective data point. We used circle pack figures to visualize each data point~\citep{collins2003circle}, generated with the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle of each non terminal shows its importance in our embedding (as seen in Figure~\ref{fig:essence}).
 
-We collected random samples 1000 times. In each iteration, we collected 50 sample datapoints from our general and borrow-checker databases (25 each). For each database, out of the 1000 sample sets, we picked the one that minimized the sampling error. The sampling error is defined as the absolute difference between the sample mean and the total mean. Also, these random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits contain multi-hunk complex changes and the key changing elements are difficult to determine.
+We collected random samples 1000 times. In each iteration, we collected 50 sample datapoints from our general and borrow-checker databases (25 each). For each database, out of the 1000 sample sets, we picked the one that minimized the sampling error. The sampling error is defined as the absolute difference between the sample mean and the total mean. Also, these random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits involve changes in many program elements and the key changing elements are difficult to determine.
 
 We carried out a manual experiment for evaluating our code embedding. In the experiment, the analyzer should rank the most important element based on the provided circlepack figure and the change's source code. Based on these ranks, then we calculate Top-$n$ Accuracy for $n=1$ up to $n=5$. Both authors carried out the experiment independently. We report the results as the portion of the changes which both authors agreed upon its embedding correctness. The final results are shown in Figure~\ref{fig:rq1}.
 
@@ -79,7 +79,7 @@ Although, on average, reporting most important element within the top four eleme
 
 \textbf{What are the general fix patterns in Rust, and how often do they apply?} 
 
-We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 12 general patterns, which we describe in Table~\ref{table:general}. As it is shown in the table, we have separated the patterns based underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column). Now we provide detailed description for each of these patterns:
+We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters and that resulted in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 12 general patterns, which we describe in Table~\ref{table:general}. As it is shown in the table, we have separated the patterns based on the underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column). Now we provide detailed description for each of these patterns:
 
 \begin{table}[]
 
@@ -130,7 +130,7 @@ pub struct Call {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: (G.attr.struct.add) adding attributes to the struct; (G.attr.struct.drop) removing attributes from the struct; and (G.attr.struct.change) changing the content of an existing attribute. These attributes are Outer Attributes as we can find struct related non-terminals within the ASTDiff of the instances of this pattern. \\
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern. \\
 
 \noindent\textit{\textbf{G.attr.struct.field} Modifying the attributes of struct fields}
 
@@ -162,22 +162,22 @@ pub struct Retain {
 
 \subsubsection{Struct} 
 
-Similar to other languages, such as C, a struct makes it possible for the users to define a custom type that is comprised of different types. The patterns that we describe in this section can also be seen in other languages that use the same concept.
+Similar to other languages, such as C, a struct makes it possible for the users to define a custom type that is comprised of different types. The patterns that we describe in this section can also be seen in other languages that use the same concept. \\
 
 \noindent\textit{\textbf{G.struct.field} Adding/Removing a struct field}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 // G.struct.field.add: Adding a new field to a struct
+struct SnapshotService<U, R> {
+    uuid_resolver_handle: R,
+    <@\textcolor{green}{++}@> db_name: String,
+}
+// G.struct.field.drop: Removing a field from a struct
 struct InnerListeners {
     pending: Mutex<Vec<Pending>>,
     <@\textcolor{red}{--}@> queue_object_name: Uuid,
 }
 
-// G.struct.field.drop: Removing a field from a struct
-struct SnapshotService<U, R> {
-    uuid_resolver_handle: R,
-    <@\textcolor{green}{++}@> db_name: String,
-}
 \end{lstlisting}
 
 \noindent\textbf{Description:} A set of new fields are added to or removed from an existing struct. A developer adds a new field to store a new piece of data in a struct. A developer removes a field when the developer realizes that the field is not required with respect to the behaviour they want to implement (possibly because they have moved it elsewhere). \\
@@ -185,7 +185,6 @@ struct SnapshotService<U, R> {
 \noindent\textit{\textbf{G.struct.field.pub} Modifying the access modifiers of struct fields}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
-
 // G.struct.field.pub.add: Adding pub to a field
 pub struct HtmlBlock {
     <@\textcolor{red}{--}@> content: BlockContent,
@@ -202,7 +201,7 @@ pub struct Languages {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in a bug fixing change, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes.
+\noindent\textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding \texttt{pub} access modifier happened in bug fixing changes, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes.
 
 \subsubsection{Option}
 \vspace{3mm}
@@ -210,7 +209,6 @@ pub struct Languages {
 \noindent\textit{\textbf{G.option} Changing field type T to T$\langle$Option$\rangle$}
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
-
 #[ast_node("MediaRule")]
 pub struct MediaRule {
     pub span: Span,
@@ -408,7 +406,7 @@ for p in wixobjs {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy (commit messages indicated the use of Clippy for this fix). The change applies on an object prior to calling \verb+to_string()+ on that object. The change might add or remove a dereference, as shown above. When adding a dereference, the reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods.
+\noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy (commit messages indicated the use of Clippy for this fix). The change applies on an object prior to calling \verb+to_string()+ on that object. In this change, a dereference operator is added to that object. The reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods.
 
 
 \subsubsection{Mut}
@@ -425,7 +423,7 @@ parser::Parser::new(args)
         })?
 \end{lstlisting}
 
-\noindent\textbf{Description:} This change happens when the developer needs to mutate a variable which was previously immutable in a scope---they thus need to add the mut keyword. We never observed this pattern in refactoring changes; it always accompanied a change in program behaviour. \\
+\noindent\textbf{Description:} This change happens when the developer needs to mutate a variable which was previously immutable in a scope---they thus need to add the \verb+mut+ keyword. We never observed this pattern in refactoring changes; it always accompanied a change in program behaviour. \\
 
 \noindent\textit{\textbf{BC.mut.drop} Dropping mutability}
 
