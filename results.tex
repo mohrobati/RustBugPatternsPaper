@@ -159,7 +159,8 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, Serde (A serialization/deserialization tool for Rust) calls a different function (\verb+is_empty+) to determine whether to skip serializing the \verb+attributes+ field.
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field.
+
 
 \subsubsection{Struct} 
 
