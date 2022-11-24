@@ -9,11 +9,9 @@ As discussed in the previous section, we used an embedding mechanism to incorpor
 
 Our evaluation aims to determine whether the most important program elements get high values in our embedding, i.e. are recognized as important. A human analyzer compares the actual change in the code and compares it to the visual representation of the respective data point. We used circle pack figures to visualize each data point~\citep{collins2003circle}, generated with the packcircles python library\footnote{\url{https://github.com/mhtchan/packcircles}}. In these figures, the radius of the circle for each non terminal shows its importance in our embedding (Figure~\ref{fig:essence} presented an example of the circle pack figures).
 
-We collected random samples 1000 times. In each iteration, we collected 50 sample datapoints from our general and borrow-checker databases (25 each). For each database, out of the 1000 sample sets, we picked the one that minimized the sampling error. The sampling error is defined as the absolute difference between the sample mean and the total mean. Also, these random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits involve changes in many program elements and the key changing elements are difficult to determine.
+We collected random samples 1000 times. In each iteration, 50 datapoints are sampled from our general and borrow-checker databases (25 each). For each database, out of the 1000 sample sets, we picked the one that minimized the sampling error. The sampling error is defined as the average of the absolute differences between the sample set mean and the total mean per column~\citep{degroot2012probability}. Also, these random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits involve changes in many program elements and the key changing elements are difficult to determine.
 
-The human looks at the program output and assigns a rank to it
-
-We carried out a manual experiment for evaluating our code embedding. In the experiment, the human analyzer looks at the provided circlepack figure and the change's source code and assigns a rank to it. This rank reflects the rank of the most important element in the circle pack figure according to the analyzer's view. Based on these ranks, then we calculate Top-$n$ Accuracy for $n=1$ up to $n=5$. Both authors acted as analyzer and carried out the experiment independently. We report the results as the fraction of the changes on which both authors agreed upon its embedding correctness. The final results are shown in Figure~\ref{fig:rq1}.
+We carried out a manual experiment for evaluating our code embedding. In the experiment, the human analyzer looks at the change's source code and finds the most important element that appears in the circle pack figure, recording its rank. A value of 1 indicates that the human analyzer concurs with the algorithm, while 2 means that the human-identified most important element was ranked 2 by the algorithm. After collecting all the ranks, then we calculate Top-$n$ Accuracy for $n=1$ up to $n=5$. Both authors acted as analyzer and carried out the experiment independently. We report the results as the fraction of the changes on which both authors agreed upon its embedding correctness. The final results are shown in Figure~\ref{fig:rq1}.
 
 \begin{figure}[h]
 \centering
@@ -161,11 +159,11 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, this modification also happens in three different ways. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information.
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, Serde (A serialization/deserialization tool for Rust) calls a different function (\verb+is_empty+) to determine whether to skip serializing the \verb+attributes+ field.
 
 \subsubsection{Struct} 
 
-Similar to other languages, such as C, a struct makes it possible for the users to define a custom type that is comprised of different types. The patterns that we describe in this section can also be seen in other languages that use the same concept. \\
+Like in other languages, such as C, a struct makes it possible for users to define a custom type that is comprised of different types. The patterns that we describe in this section can also be seen in other languages that use the same concept. \\
 
 \noindent\textit{\textbf{G.struct.field} Adding/Removing a struct field}
 
@@ -222,14 +220,14 @@ pub struct MediaRule {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain null, they would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that a variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
+\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain the equivalent of null, they would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that a variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field.
 
-For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\scriptsize \url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code, accordingly.
+For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\scriptsize \url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code accordingly.
 
 
 \subsubsection{Types}
 
-Rust is a statically-typed language, and similar to the other statically-typed languages, some of the change patterns are associated with changes in types used in different program structures. Here, we introduce four bug fix patterns that are associated with types in Rust:
+Rust is a statically-typed language, and like in the other statically-typed languages, some change patterns are associated with changes in types used in different program structures. Here, we introduce four bug fix patterns that are associated with types in Rust:
 
 \vspace{3mm}
 
@@ -243,9 +241,9 @@ pub struct Manifest {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also, it can happen for refactoring purposes or performance enhancement. 
+\noindent\textbf{Description:} The type of a struct field changes. This is a common change pattern in all statically-typed languages and can happen for various reasons. For instance, the developer may be implementing a new feature or fixing the behaviour of the program. Also, it can happen for refactoring purposes or for performance enhancement. 
 
-For instance, in the Rust project starship/starship (a cross-shell prompt), in order to preserve the insertion order of \verb+substitutions+ field, the developer changes its type from \verb+HashMap+ to \verb+IndexMap+\footnote{\url{https://github.com/starship/starship/commit/4de9e43cff46c834bd340d24a02fc95d85310a33}}.
+For instance, in the Rust project starship/starship (a cross-shell prompt), to preserve the insertion order of the \verb+substitutions+ field, the developer changes its type from \verb+HashMap+ to \verb+IndexMap+\footnote{\url{https://github.com/starship/starship/commit/4de9e43cff46c834bd340d24a02fc95d85310a33}}.
 \\
 
 \noindent\textit{\textbf{G.type.generic} Changing a generic type parameter}
@@ -337,7 +335,7 @@ Operation::Insert(insert) => {
 
 \textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
 
-We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 8 borrow-checker related fix patterns, which we, similar to the previous table, describe in Table~\ref{table:bc}. Here we provide a detailed description for each of these patterns:
+We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 8 borrow-checker related fix patterns. Similar to the previous table, we describe BC-related patterns in Table~\ref{table:bc}. Now, we provide a detailed description of each of these patterns:
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
@@ -409,7 +407,7 @@ for p in wixobjs {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} This is a change that in all instances has been detected by Clippy (commit messages indicated the use of Clippy for this fix). The change applies on an object prior to calling \verb+to_string()+ on that object. In this change, a dereference operator is added to that object. The reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods.
+\noindent\textbf{Description:} This is a change that in all instances (in our benchmarks) has been proposed by Clippy---commit messages indicated the use of Clippy for this fix. The change applies on an object prior to calling \verb+to_string()+ on that object. In this change, a dereference operator is added to that object. The reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods.
 
 
 \subsubsection{Mut}
@@ -460,5 +458,5 @@ pub fn expand_delimited_square(
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} This change pattern removes the static keyword from a const variable declaration. This change can be applied using Clippy. If the presence of static is not required, it is better that to omit it, as keeping it might create complicated types in the program.
+\noindent\textbf{Description:} This change pattern removes the static keyword from a const variable declaration. This change can be applied using Clippy. A static lifetime of a variable indicates that the variable lives for the entire lifetime of the running program, and is not bound to a specific scope. If the presence of static is not required, it is better that to omit it, as keeping it might create complicated types in the program.
 
