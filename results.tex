@@ -371,7 +371,7 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. With regards to this pattern, Clippy detects whether a variable clone is necessary, i.e. could the developer have used the variable itself or not. It is evident that removing a redundant clone does not modify the program behaviour, however it can boost the performance significantly if the program was repeatedly cloning large variables. \\
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy would have to conservatively estimate redundancy. By definition, removing a redundant clone does not modify functional aspects of the program behaviour. However, such a removal can greatly improve performance, if the program was formerly cloning large objects. \\
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
