@@ -459,5 +459,5 @@ pub fn expand_delimited_square(
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} This change pattern removes the static keyword from a const variable declaration. This change can be applied using Clippy. A static lifetime of a variable indicates that the variable lives for the entire lifetime of the running program, and is not bound to a specific scope. If the presence of static is not required, it is better that to omit it, as keeping it might create complicated types in the program.
+\noindent\textbf{Description:} This change pattern removes the static keyword from a const variable declaration. This change can be applied using Clippy. A static lifetime associated with a variable indicates that the variable lives for the entire lifetime of the running program, and is not bound to a specific scope. If the presence of static is not required, it is better that to omit it, as keeping it might create complicated types in the program.
 
