@@ -4,7 +4,13 @@ In each group, we categorized the bug fix patterns based on the underlying progr
 
 Furthermore, we expected to obtain some patterns associated with certain Rust-related features but our results did not include those patterns. Our speculation is that, since Rust has a strong compiler check before creating the program executable, the programmers usually get many errors, and they only push their code once it is free of compile errors. For instnace, we did not observe any patterns associated with \verb+move+ operator in Rust. This operator is used to transfer the ownership of values to a closure. In some cases (e.g. multithreading) not moving the ownership can create invalid references, something that Rust's compiler prevents. That is why we believe due to Rust's strong compiler check some patterns were hidden from our sight.
 
-We believe our results can help researchers to create Rust tools for repair, fault localization, IDE linters, and etc. Also, these results can help program embedding methods to focus on more important aspects of a program and shrink down information more effectively.
+We believe our results can help researchers to create IDE tools for Rust. For instance, we discussed that \textit{Modifying the attributes of structs} is a common pattern that is observed in bug fix code changes. Assuming that the correct usage of attributes can be found other locations in the codebase~\citep{forrest2009genetic}, a code linter tool can be crafted to look for correct attribute list.
+
+Similarly, we presented the pattern \textit{Dropping clone and adding borrowing}. As discussed, Clippy does not detect this pattern, and repetitive clones can be computationally expensive and might lead to hogging the CPU. Using state-of-the-art method for program repair, a tool can be designed to recognize this pattern and change variable cloning to a simple borrowing.
+
+A general approach for code embedding is to extract paths with semantic information that serves better to our embedding goal. For instance, to design an embedding method for repairing Rust programs, the designer might want to disregard certain elements, such as moving ownerships to closure body---as they did not appear in the bug patterns we presented.
+
+All of our parsing, path extraction, weighting scheme and clustering modules in addition to our final results can be found in our replication package for verification, resuability and further extension. The weighting can be modified to make the embedding focus on a specific set of elements for building different code embeddings.
 
 \subsection{Threats to Validity}
 
