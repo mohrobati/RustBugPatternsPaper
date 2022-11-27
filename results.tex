@@ -11,7 +11,7 @@ Our evaluation aims to determine whether the most important program elements get
 
 We collected random samples 1000 times. In each iteration, we sampled 50 datapoints from our general and borrow-checker databases (25 each). For each database, out of the 1000 sample sets, we picked the one that minimized the sampling error. The sampling error is defined as the average of the absolute differences between the sample set mean and the total mean per column~\citep{degroot2012probability}. Also, these random samples are drawn from the clustered datapoints. The reason behind this decision is the same as why we collected a lot of noise points, that is, the majority of the commits involve changes in many program elements and the key changing elements are difficult to determine.
 
-We carried out a manual experiment for evaluating our code embedding. In the experiment, the human analyzer looks at the change's source code and finds the most important element that appears in the circle pack figure, recording its rank. A value of 1 indicates that the human analyzer concurs with the algorithm, while 2 means that the human-identified most important element was ranked 2 by the algorithm. After collecting all the ranks, then we calculate Top-$n$ Accuracy for $n=1$ up to $n=5$. Both authors acted as analyzer and carried out the experiment independently. To avoid inflating our final results, after comparing the ranks that the authors gave to each datapoint, we consider the larger (worse) rank in our final results. That is, if the first author gave rank 2 to datapoint $D$ and the second author gave rank 3 to that datapoint, in the final results we gave datapoint $D$ a rank of 3. The final results are shown in Figure~\ref{fig:rq1}.
+We carried out a manual experiment for evaluating our code embedding. In the experiment, the human analyzer looks at the change's source code and finds the most important element that appears in the circle pack figure, recording its rank. A value of 1 indicates that the human analyzer concurs with the algorithm, while 2 means that the human-identified most important element was ranked 2 by the algorithm. After collecting all the ranks, then we calculate Top-$n$ Accuracy for $n=1$ up to $n=5$. Both authors acted as analyzer and carried out the experiment independently. To avoid inflating our final results, after comparing the ranks that the authors gave to each datapoint, we consider the larger (worse) rank in our final results. That is, if the first author gave rank 2 to datapoint $D$ and the second author gave rank 3 to that datapoint, in the final results we gave datapoint $D$ a rank of 3. The authors' answers were the same for 45 of the 50 datapoints. The final results are shown in Figure~\ref{fig:rq1}.
 
 \begin{figure}[h]
 \centering
@@ -34,9 +34,9 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
     mark=o,
     ]
     coordinates { 
-    (1,64)
-    (2,72)
-    (3,84)
+    (1,72)
+    (2,76)
+    (3,88)
     (4,88)
     (5,92)
     };
@@ -49,8 +49,8 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
     coordinates { 
     (1,68)
     (2,84)
-    (3,88)
-    (4,92)
+    (3,84)
+    (4,88)
     (5,96)
     };
     \addlegendentry{Borrow-Checker}
@@ -60,10 +60,10 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
     mark=triangle,
     ]
     coordinates { 
-    (1,66)
-    (2,78)
+    (1,70)
+    (2,80)
     (3,86)
-    (4,90)
+    (4,88)
     (5,94)
     };
     \addlegendentry{Total}
@@ -74,7 +74,7 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
 
 \end{figure}
 
-Although we found that our results were acceptable---the result reported by our embedding was top-4 as ranked by humans 90\% of the time---we investigated the other 10\% as well. We found that our embedding tended to fail in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). It is worth mentioning that these change patterns tend to apply across projects less often, as having many changed elements make it easier for datapoints to be dissimlar.
+Although we found that our results were acceptable---the result reported by our embedding was top-4 as ranked by humans 88\% of the time---we investigated the other 12\% as well. We found that our embedding tended to fail in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). It is worth mentioning that these change patterns tend to apply across projects less often, as having many changed elements make it easier for datapoints to be dissimlar.
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
