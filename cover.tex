@@ -12,24 +12,25 @@
 \setlength{\headheight}{0in}
 \setlength{\textheight}{8.5in}
 
+\signature{Mohammad Robati Shirzad and Patrick Lam}
+
 \begin{document}
 \begin{letter}{}
-\opening{Dear Editor,}
+\opening{Dear Prof. Feldt,}
 
-We are submitting the attached paper, "A Study of Common Bug Fix Patterns in Rust"
-for publication in EMSE. This paper is an empirical study of the common bug fix patterns that we extracted from the most popular open-source Rust projects. Our primary contributions are as follows:
+We are submitting the attached paper, ``A Study of Common Bug Fix Patterns in Rust,'' for publication in EMSE. This paper is an empirical study of the common bug fix patterns that we extracted from the most popular open-source Rust projects. Our primary contributions are as follows:
 
 \begin{itemize}
     \item We introduce Ruxanne, our pipeline for mining bug fix patterns in Rust. Ruxanne consists of different modules for parsing Rust programs, embedding the obtained ASTs after parsing in fixed sized datapoints, and clustering these fixed sized datapoints into different groups. 
-    \item We propose a novel code embedding method, that is simple, highly interpretable, and effective in capturing the most important aspects of a program change. Our code embedding approach is based on a flexible weighting scheme, that can be modified to serve to different purposes. Using this weighting scheme, we are able to give more weight to the elements that we deem more important. % We conducted an experiment to manual evaluate our embedding method. The results show that after using our tool, in more than 85\% of the datapoints, the most important element is reported at least in the first three ranks.
-    \item Using Ruxanne, we mined the top 18 most starred Rust projects in Github to discover common bug fix patterns within their code changes. We stored 87,726 datapoints drawn from 57,214 commits across these 18 projects. After using the DBSCAN clustering algorithm, and a subsequent manual analysis, we obtained 20 cross-project bug fix patterns. To respect the crucial role of the Borrow-Checker module in Rust's compiler, we introduce these patterns in two groups: 8 Borrow-Checker related and 12 general bug fix patterns.
+    \item We propose a novel code embedding method. Our method is simple, highly interpretable, and effective in capturing the most important aspects of a program change. Our code embedding approach is based on a flexible weighting scheme, which can be modified to serve to different purposes. Using this weighting scheme, we are able to give more weight to the elements that we deem more important. % We conducted an experiment to manual evaluate our embedding method. The results show that after using our tool, in more than 85\% of the datapoints, the most important element is reported at least in the first three ranks.
+    \item Using Ruxanne, we mined the top 18 most starred Rust projects in Github to discover common bug fix patterns within their code changes. We stored 87,726 datapoints drawn from 57,214 commits across these 18 projects. After using the DBSCAN clustering algorithm, and a subsequent manual analysis, we obtained 20 cross-project bug fix patterns. Given the crucial role of the Borrow-Checker module in Rust's compiler, we introduce these patterns in two groups: 8 Borrow-Checker related and 12 general bug fix patterns.
     \item In the paper, we discuss how our findings can be useful for developing program repair and fault localization tools in Rust. Also, the patterns that we introduced can open up new linting opportunities for Rust code linters. 
-    \item We believe our work resembles~\cite{hanam2016discovering}~and~\cite{yang2022mining}, which studied common bug patterns in Javascript and Python, respectively.  
+    \item Our work is most closely related to~\cite{hanam2016discovering}~and~\cite{yang2022mining}, which studied common bug patterns in JavaScript and Python; we instead consider Rust bug patterns. Rust greatly differs from JavaScript and Python in being statically typed and having strict static type checking, including ownership checking via the borrow checker. We believe that studying the question of bug patterns in a novel context is a valuable contribution.
 \end{itemize}
 
-Thank you for your consideration.
+We have not previously submitted any related work for publication in any venue. 
 
-Mohammad Robati Shirzad and Patrick Lam
+\closing{Thank you for your consideration.}
 
 \small
 \bibliographystyle{plain}
