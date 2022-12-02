@@ -59,6 +59,8 @@
 \usepackage{todonotes}
 \usepackage{hyperref}
 \usepackage{subfiles} % Best loaded last in the preamble
+\usepackage{xcolor}
+\usepackage{fontawesome5}
 \input{defs}
 
 \tikzset{ 
@@ -113,11 +115,12 @@
 \thanks{Competing Interests: We have no competing interests and are funded by a Discovery Grant from Canada's Natural Science and Engineering Research Council.}
 }
 \subtitle{}
+\definecolor{orcidlogocol}{rgb}{0.65, 0.807, 0.223}
+\newcommand{\orcid}[1]{$\,$\href{https://orcid.org/#1}{\textcolor{orcidlogocol}{\faOrcid}}}
 
 %\titlerunning{Short form of title}        % if too long for running head
-
-\author{Mohammad Robati Shirzad         \and
-        Patrick~Lam %etc.
+\author{Mohammad Robati Shirzad \orcid{0000-0002-6297-8229}       \and
+        Patrick~Lam \orcid{0000-0001-8278-5400} %etc.
 }
 
 %\authorrunning{Short form of author list} % if too long for running head
@@ -126,10 +129,6 @@
               200 University Ave W, Waterloo, ON N2L 3G1 \\
               \email{mrobatis@uwaterloo.ca}           %  \\
 %             \emph{Present address:} of F. Author  %  if needed
-           \and
-           Patrick Lam \at
-                200 University Ave W, Waterloo, ON N2L 3G1 \\
-                \email{patrick.lam@uwaterloo.ca}
 }
 
 \date{Received: date / Accepted: date}
