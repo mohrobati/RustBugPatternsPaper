@@ -242,37 +242,49 @@ We propose a novel representation. Similar to the naive approach, we order-insen
         
         \node[draw, minimum height=0.5, fill=yellow!20] at (-0.74,1.7) {ASTDiff};
 
-        \node[draw, minimum height=0.5, fill=yellow!20] at (4.29,1.73) {Occurrences data};
+        \node[draw, minimum height=0.5, fill=yellow!20] at (3.66,1.72) {Occurrences data};
         
         \matrix (table1) [table,text width=6em,nodes={scale=0.45,transform shape}] at (8.5,1)
         {
-        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone\\
-        \# & 1 & 1 & 1 & 1 & 2 & 3 & 1 & 1 \\
+        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone & other\\
+        \# & 1 & 1 & 1 & 1 & 2 & 3 & 1 & 1 & 0\\
         };
         
-        \node[draw, minimum height=0.5, fill=yellow!20] at (4.12,-0.25) {Weighted data};
+        \node[draw, minimum height=0.5, fill=yellow!20] at (3.48,-0.25) {Weighted data};
         
         \node[draw=none] at (8.2,0) {Multiply};
         \draw [-stealth,double,line width=1,color=blue!40](7,0.4) -- (7,-0.4);
         
         \matrix (table2) [table,text width=6em,nodes={scale=0.45,transform shape}] at (8.5,-1)
         {
-        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone\\
-        weight & 0.0004 & 2.21e-05 & 8.68e-05 & 1 & 2.60e-05 & 2.76e-05 & 4.75e-05 & 1 \\
+        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone & other \\
+        weight & 0.0004 & 2.21e-05 & 8.68e-05 & 1 & 2.60e-05 & 2.76e-05 & 4.75e-05 & 1 & ... \\
+        };
+
+        \node[draw, minimum height=0.5, fill=yellow!20] at (3.7,-2.25) {Essence of change};
+
+        \node[draw=none] at (8.2,-1.95) {Result};
+        \draw [-stealth,double,line width=1,color=blue!40](7,-1.6) -- (7,-2.4);
+
+
+        \matrix (table3) [table,text width=6em,nodes={scale=0.45,transform shape}] at (8.5,-3)
+        {
+        Element & ItemFn  & Local & ExprCall & ExprReference & Path & Ident & ExprMethodCall & clone & other \\
+        value & 0.0004 & 2.21e-05 & 8.68e-05 & 1 & 5.20e-05 & 8.28e-05 & 4.75e-05 & 1 & 0\\
         };
         
-        \node[draw=none] (circlepack) at (10.5,-6.2)
+        \node[draw=none] (circlepack) at (10.5,-8.2)
             {\includegraphics[width=0.7\textwidth]{circlepack.png}};
             
         
-        \node[draw=none] at (9,-2.3) {Visualizing Essence};
-        \draw [-stealth,double,line width=1,color=blue!40](7,-1.6) -- (7.5,-3.4);
+        \node[draw=none] at (9,-4.3) {Visualizing Essence};
+        \draw [-stealth,double,line width=1,color=blue!40](7,-3.6) -- (7.5,-5.4);
         
         
         \end{tikzpicture}
         
 
-    \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights results in the essence of change, visualized with a circle pack figure at bottom right. Vectors show (above) the number of occurrences and (below) weighted occurrence counts.}
+    \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights results in the essence of change, visualized with a circle pack figure at bottom right.}
 \end{figure}
 
 Our main requirement is that our datapoints summarize the key changes in ASTDiffs---a datapoint should foreground the most important change in a diff. For instance, the purple (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description, in our opinion, is the most useful one, and we designed our weighting scheme to embed this value judgment.
@@ -282,7 +294,7 @@ To design our weighting scheme, we collected empirical data about locations of i
 
 Furthermore, as we wanted to make sure that our tool captures patterns related to the Rust borrow checker, we manually increased the weights of the \texttt{BCE} items. The manual adjustment is why we characterize our weighting scheme as semi-automatically designed. The final weights can also be found in our replication package.
 
-Multiplying the number of occurrences of all observed items in a change by their respective weights results in a vector of numbers. We call this vector the \emph{essence of change}. In this vector, the value for each item shows its importance in the change. Figure~\ref{fig:essence} shows the process of computing the essence of the code change that we saw in Figure~\ref{fig:extraction}. We have visualized this essence vector using a circle pack figure. The radius of each circle corresponds to the importance of the item inside it.
+Multiplying the number of occurrences of all observed items in a change by their respective weights results in a vector of numbers. We call this vector the \emph{essence of change}. In this vector, the value for each item shows its importance in the change. Figure~\ref{fig:essence} shows the process of computing the essence of the code change that we saw in Figure~\ref{fig:extraction}. We have visualized this essence vector using a circle pack figure. The radius of each circle corresponds to the importance of the item inside it. The essence of change vector essentially serves as our embedding vector, transforming the patch illustrated in Figure~\ref{fig:extraction} into a fixed-sized vector as depicted in Figure~\ref{fig:essence}.
 
 \subsection{\label{sec:mining_repositories}Mining Repositories}
 \label{sec:mining}
