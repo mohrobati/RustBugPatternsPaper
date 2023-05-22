@@ -161,7 +161,7 @@ pub struct Retain {
 
 \noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field. \\
 
-\noindent\textbf{Actionability:} Bug fix patterns related to attributes in Rust, such as adding or removing attributes can be valuable in designing program repair tools. For instance, by detecting and removing attributes that are no longer needed, program repair tools can optimize the codebase and eliminate unnecessary overhead. On the other hand, when adding an attribute, these patterns offer insights into how repair tools can manipulate attributes and modify other parts of the code accordingly to make it adhere to the user's specifications.
+\noindent\textbf{Actionability:} Bug fix patterns related to attributes in Rust, such as removing or adding attributes can be valuable in designing program repair tools. For instance, by recognizing situations where attributes are no longer needed, program repair tools can propose changes that optimize the codebase and eliminate unnecessary overhead. On the other hand, a repair tool could also recognize situations where attributes need to be added, enabling the code to better adhere to the user's specifications.
 
 \subsubsection{Struct} 
 
