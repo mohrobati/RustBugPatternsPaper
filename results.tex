@@ -182,6 +182,9 @@ pub struct Retain {
 
 \noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field. \\
 
+\todo{please confirm: G.attr.struct.field is not a subset of G.attr.struct.}
+
+
 \noindent\textbf{Actionability:} Because attributes have semantic effects, program repair tools can effect repairs by adjusting the set of attributes included. Because so many of our bug fixes change attributes, we believe that IDEs ought to be able to propose relevant attribute changes, as witnessed in our corpus. The example in the text about changing Deserialize to ConfigDeserialize is specific to that program, but other changes would apply more generally. \todo{which?} Also, we demonstrated a case where the developer removed a \texttt{Debug} attribute. A novel type of performance program repair tool working with a run-time profiler could identify unnecessary code and remove attributes that generate it. 
 
 \subsubsection{Struct} 
@@ -227,7 +230,7 @@ pub struct Languages {
 
 \noindent\textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in bug fixing changes, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes. \\
 
-\noindent\textbf{Actionability:} The patterns related to access modifiers offer an opportunity for repair tools to make sure that the reachability of program entities follows the user's specifications, enhancing security and maintainability. Additionally, the empirical numbers revealing the frequency of struct field modifications in Rust shed light on the significance of these bug fix patterns and emphasize the need for further exploration on how program repair tools can effectively modify code based on changes in struct fields to repair program behavior. These patterns provide valuable insights for program repair tools to automatically analyze and modify the codebase, ensuring it aligns with the desired behavior. 
+\noindent\textbf{Actionability:} The patterns related to access modifiers suggest an opportunity for repair tools to make sure that the accessability of program entities follows the user's specifications, enhancing encapsulation, security, and maintainability. Additionally, the empirical numbers revealing the frequency of struct field modifications in Rust shed light on the significance of these bug fix patterns and emphasize the need for further exploration on how program repair tools can effectively modify code based on changes in struct fields to repair program behavior. 
 
 \subsubsection{Option}
 \vspace{3mm}
@@ -343,7 +346,7 @@ In Rust, match control flow construct is used for comparing a value against mult
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, a change occurs in an arm's pattern. Like the code snippet provided above, it can be a change in pattern's type. It also can be matching to a different enum variant or string. The fix pattern can happen both for refactoring or debugging purposes. \\
+\noindent\textbf{Description:} In this pattern, a change occurs in an arm's pattern. Like the code snippet provided above, it can be a change in a match pattern's type. It also can be matching to a different enum variant or string. The fix pattern can happen both for refactoring or debugging purposes. \\
 
 \noindent\textit{\textbf{G.match.code} Change in a match arm's code}
 
@@ -395,7 +398,7 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy would have to conservatively estimate redundancy. By definition, removing a redundant clone does not modify functional aspects of the program behaviour. However, such a removal can greatly improve performance, if the program was formerly cloning large objects. \\
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy conservatively estimates redundancy. By definition, removing a clone that is indeed redundant does not modify functional aspects of the program behaviour. (Removing a non-redundant clone introduces a compile error or, worse yet, a bug.) However, such a removal can greatly improve performance, if the program was formerly cloning large objects. \\
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
@@ -408,7 +411,7 @@ start_plugin_process(
 
 Like the previous pattern, this change does not affect the program behaviour; it is done for performance purposes. In one of the commits\footnote{\scriptsize \url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, changing a clone to borrowing significantly improved CPU usage. In the commit history, developers discussed how the cloning of types such as HashMap was expensive. \\
 
-\noindent\textbf{Actionability:} A program repair tool can efficiently implement this modification by examining the necessity of the clone operation and considering the user's specifications regarding variable cloning. If the clone is deemed unnecessary, the tool can effortlessly replace it with a reference to reduce the overhead of unnecessary copying, as discussed in the example above. \\
+\noindent\textbf{Actionability:} A program repair tool can implement clone removal by examining the necessity of the clone operation and considering the user's specifications regarding variable cloning. If the clone is unnecessary, the tool can replace it with a reference to reduce the overhead of unnecessary copying, as discussed in the example above. \\
 
 \subsubsection{Ref and Deref}
 
