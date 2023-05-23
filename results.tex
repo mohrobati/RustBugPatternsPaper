@@ -112,26 +112,37 @@ Attributes in Rust enable developers to add metadata to program elements. Develo
 
 \begin{lstlisting}[language=Rust, style=colouredRust]
 // G.attr.struct.add: Adding attributes to a struct
-<@\textcolor{green}{++}@> #[derive(Debug, Clone)]
-pub struct Call {
-/// body 
+<@\textcolor{red}{--}@> #[derive(Clone, Properties)]
+<@\textcolor{green}{++}@> #[derive(Clone, Properties, PartialEq)]
+pub struct CounterProps {
+    pub destroy_callback: Callback<()>,
 }
 
 //G.attr.struct.drop: Removing attributes from a struct
-<@\textcolor{red}{--}@> #[derive(Debug, Clone)]
-pub struct Call {
-/// body 
+<@\textcolor{red}{--}@> #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
+<@\textcolor{green}{++}@> #[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct Subset {
+    /// Invariant, maintained by `SubsetBuilder`: all `Segment`s have non-zero
+    /// length, and no `Segment` has the same count as the one before it.
+    segments: Vec<Segment>,
 }
 
 // G.attr.struct.change: Changing an existing attribute of a struct
-<@\textcolor{red}{--}@> #[derive(Debug)]
-<@\textcolor{green}{++}@> #[derive(Debug, Clone)]
-pub struct Call {
-/// body 
+<@\textcolor{red}{--}@> #[derive(Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
+<@\textcolor{green}{++}@> #[derive(ConfigDeserialize, Debug, Copy, Clone, PartialEq, Eq)]
+pub enum SearchAction {
+    SearchFocusNext,
+    SearchFocusPrevious,
+    SearchConfirm,
+    SearchCancel,
+    SearchClear,
+    SearchDeleteWord,
+    SearchHistoryPrevious,
+    SearchHistoryNext,
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern. \\
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern.\\
 
 \noindent\textit{\textbf{G.attr.struct.field} Modifying the attributes of struct fields}
 
@@ -139,15 +150,17 @@ pub struct Call {
 // G.attr.struct.field.add: Adding attributes to struct fields
 #[derive(Serialize)]
 pub struct Retain {
-    <@\textcolor{green}{++}@> #[serde(skip_serializing_if = "is_empty")]
+    <@\textcolor{green}{++}@> #[serde(skip_serializing_if = "Option::is_none")]
     pub attributes: Option<Attributes>,
 }
 
 // G.attr.struct.field.drop: Removing attributes from struct fields
-#[derive(Serialize)]
-pub struct Retain {
-    <@\textcolor{red}{--}@> #[serde(skip_serializing_if = "Option::is_none")]
-    pub attributes: Option<Attributes>,
+pub struct ExpandContext<'context> {
+    #[get = "pub(crate)"]
+    pub registry: Box<dyn SignatureRegistry>,
+    <@\textcolor{red}{--}@> #[get = "pub(crate)"]
+    pub source: &'context Text,
+    pub homedir: Option<PathBuf>,
 }
 
 // G.attr.struct.field.change: Changing attributes of struct fields
