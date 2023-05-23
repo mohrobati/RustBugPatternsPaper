@@ -106,7 +106,11 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
 
 \subsubsection{Attributes}
 
-Attributes in Rust enable developers to add metadata to program elements. Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute. The concept of attributes in Rust is similar to Java's annotations and Python's decorators. While each language may have its own syntax and specific use cases, the fundamental idea of attaching additional information to code elements is shared across these languages. \\
+The most common bug fix pattern in our corpus modifies attributes. In Rust, attributes enable developers to add metadata to program elements. Some of the attributes---presumably all of the ones involved in bug fixes---affect the semantics of the program; for instance, libraries can generate different code based on the attributes that the developer specifies.
+
+Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
+
+The concept of attributes in Rust is similar to Python's decorators and Java's annotations (though Java annotations may be less likely to have runtime effect; for instance, Java @Override adds additional compile-time constraints). While each language may have its own syntax and specific use cases, the fundamental idea of attaching additional information to code elements is shared across these languages. \\
 
 \noindent\textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
@@ -142,7 +146,11 @@ pub enum SearchAction {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct changes. This modification can happen in three different ways: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern.\\
+\noindent\textbf{Description:} In this pattern, the developer changes the attribute set of a struct. There are three variants of this pattern: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern.
+
+[discussion on how many of the changes are of each variant: over 90\% are modify]
+
+In the specific cases above, the Add change requests that additional boilerplate code be generated to evaluate partial equivalence on \texttt{CounterProps} (new functionality); the Remove change causes debug code to be removed (performance fix); and the Change change requests different deserialization code be generated. \\
 
 \noindent\textit{\textbf{G.attr.struct.field} Modifying the attributes of struct fields}
 
@@ -174,7 +182,7 @@ pub struct Retain {
 
 \noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field. \\
 
-\noindent\textbf{Actionability:} Bug fix patterns related to attributes in Rust, such as removing or adding attributes can be valuable in designing program repair tools. For instance, by recognizing situations where attributes are no longer needed, program repair tools can propose changes that optimize the codebase and eliminate unnecessary overhead. On the other hand, a repair tool could also recognize situations where attributes need to be added, enabling the code to better adhere to the user's specifications.
+\noindent\textbf{Actionability:} Because attributes have semantic effects, program repair tools can effect repairs by adjusting the set of attributes included. Because so many of our bug fixes change attributes, we believe that IDEs ought to be able to propose relevant attribute changes, as witnessed in our corpus. The example in the text about changing Deserialize to ConfigDeserialize is specific to that program, but other changes would apply more generally. \todo{which?} Also, we demonstrated a case where the developer removed a \texttt{Debug} attribute. A novel type of performance program repair tool working with a run-time profiler could identify unnecessary code and remove attributes that generate it. 
 
 \subsubsection{Struct} 
 
