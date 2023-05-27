@@ -79,8 +79,11 @@ Figure~\ref{fig:rq1} shows the final results. Although we found that our results
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
 \textbf{What are the general fix patterns in Rust, and how often do they apply?} 
+We collected general fixes, asked DBSCAN to create clusters, and manually analyzed them. In this subsection, we will discuss each pattern, as well as its actionability---possible usages of the pattern for bug repair. Section~\ref{subsec:patterns} contains a global discussion of our patterns and their value.
 
-We collected 60583 datapoints for general fix patterns using a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz) and the data collection took around 26 hours to compute both $D_g$ and $D_b$. We used $\epsilon=0.0001$ and $Z=5$ as our DBSCAN parameters, resulting in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 12 general patterns, which we describe in Table~\ref{table:general}. As shown in the table, we have separated the patterns based on the underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column). Since these patterns are the general Rust patterns, analogous patterns can also occur in other programming languages, and we will discuss such patterns when describing each pattern. We will also discuss the actionability of some of the patterns. Moreover, no matter whether we can find actionable outcomes for the patterns, other researchers can use the empirical pattern frequency numbers that we report to build their own program repair tools, prioritizing more-frequently-repaired patterns. We next provide a detailed description of each of these patterns:
+Specifically, our dataset includes 60583 datapoints for general fix patterns. We processed our dataset on a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz). The data collection took around 26 hours to populate the general and BC-related databases $D_g$ and $D_b$. We used DBSCAN with parameters $\epsilon=0.0001$ and $Z=5$, resulting in 577 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 12 general patterns, which we describe in Table~\ref{table:general}. As shown in the table, we have separated the patterns based on the underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column).
+
+Since these patterns are general Rust patterns, analogous patterns can also occur in other programming languages, and we will discuss such analogous patterns when describing each pattern. We will also discuss the actionability of some of the patterns. Moreover, other researchers can use the empirical pattern frequency numbers that we report to build their own program repair tools, prioritizing more-frequently-repaired patterns; they are not limited to our suggested actionability. We next provide a detailed description of each of these patterns.
 
 \begin{table}[]
 
@@ -108,9 +111,9 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
 
 The most common bug fix pattern in our corpus modifies attributes. In Rust, attributes enable developers to add metadata to program elements. Some of the attributes---presumably all of the ones involved in bug fixes---affect the semantics of the program; for instance, libraries can generate different code based on the attributes that the developer specifies.
 
-Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
+Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes\todo{how important is inner versus outer?}: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
 
-The concept of attributes in Rust is similar to Python's decorators and Java's annotations (though Java annotations may be less likely to have runtime effect; for instance, Java @Override adds additional compile-time constraints). While each language may have its own syntax and specific use cases, the fundamental idea of attaching additional information to code elements is shared across these languages. \\
+The concept of attributes in Rust is similar to Python's decorators\todo{are python decorator changes important in the Python dataset?} and Java's annotations (though Java annotations may be less likely to have runtime effect; for instance, Java @Override adds additional compile-time constraints). While each language may have its own syntax and specific use cases, the fundamental idea of attaching additional information to code elements is shared across these languages. \\
 
 \noindent\textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
@@ -148,7 +151,7 @@ pub enum SearchAction {
 
 \noindent\textbf{Description:} In this pattern, the developer changes the attribute set of a struct. There are three variants of this pattern: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern.
 
-[discussion on how many of the changes are of each variant: over 90\% are modify]
+\todo{discussion on how many of the changes are of each variant: over 90\% are modify, but get the actual number}
 
 In the specific cases above, the Add change requests that additional boilerplate code be generated to evaluate partial equivalence on \texttt{CounterProps} (new functionality); the Remove change causes debug code to be removed (performance fix); and the Change change requests different deserialization code be generated. \\
 
@@ -183,9 +186,9 @@ pub struct Retain {
 \noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field. \\
 
 \todo{please confirm: G.attr.struct.field is not a subset of G.attr.struct.}
+\todo{we should also get the count of subtypes}
 
-
-\noindent\textbf{Actionability:} Because attributes have semantic effects, program repair tools can effect repairs by adjusting the set of attributes included. Because so many of our bug fixes change attributes, we believe that IDEs ought to be able to propose relevant attribute changes, as witnessed in our corpus. The example in the text about changing Deserialize to ConfigDeserialize is specific to that program, but other changes would apply more generally. \todo{which?} Also, we demonstrated a case where the developer removed a \texttt{Debug} attribute. A novel type of performance program repair tool working with a run-time profiler could identify unnecessary code and remove attributes that generate it. 
+\noindent\textbf{Actionability:} Because attributes have semantic effects, program repair tools can effect repairs by adjusting the set of attributes included. Starting from the observation that so many of our bug fixes change attributes, we believe that IDEs need to be able to propose relevant attribute changes, as witnessed in our corpus. The example in the text about changing Deserialize to ConfigDeserialize is specific to that program, but other changes would apply more generally. \todo{which?} Also, we demonstrated a case where the developer removed a \texttt{Debug} attribute. A novel type of performance program repair tool working with a run-time profiler could identify unnecessary code and remove attributes that generate it. 
 
 \subsubsection{Struct} 
 
@@ -228,7 +231,7 @@ pub struct Languages {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in bug fixing changes, where the developer needed to access a field which had not been marked for public access. On the other hand, the public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes. \\
+\noindent\textbf{Description:} Adding \texttt{pub} to a struct field makes it possible to access that field from external modules. In the instances of this cluster, adding the \texttt{pub} access modifier happened in bug fixing changes, where the developer needed to access a field which had not been marked for public access. On the other hand, public access might be revoked if the developer realizes there are no external accesses to the field, and that such accesses are not desirable, e.g. for encapsulation purposes. \\
 
 \noindent\textbf{Actionability:} The patterns related to access modifiers suggest an opportunity for repair tools to make sure that the accessability of program entities follows the user's specifications, enhancing encapsulation, security, and maintainability. Additionally, the empirical numbers revealing the frequency of struct field modifications in Rust shed light on the significance of these bug fix patterns and emphasize the need for further exploration on how program repair tools can effectively modify code based on changes in struct fields to repair program behavior. 
 
@@ -251,7 +254,7 @@ pub struct MediaRule {
 \noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain the equivalent of null, they would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants, \texttt{Some}, which indicates that a variable has a value, and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field. 
 For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\scriptsize \url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code accordingly. \\
 
-\noindent\textbf{Actionability:} When the user's specification requires a variable to be able to assume \texttt{None} values, these patterns indicate the need to modify the program accordingly. A program repair tool can leverage these patterns to automatically update the variable's type to \texttt{Option<T>}, ensuring that it can now hold \texttt{None} as a valid value. Furthermore, such a tool should also systematically update other occurrences of that variable throughout the program to account for the change and ensure program correctness. 
+\noindent\textbf{Actionability:} When the user's specification requires a variable to be able to assume \texttt{None} values, these patterns indicate the need to modify the program accordingly. A program repair\todo{is this really a repair tool or a refactoring tool? I feel like many of our changes are for refactorings not repairs, despite our PR} tool can leverage these patterns to automatically update the variable's type to \texttt{Option<T>}, ensuring that it can now hold \texttt{None} as a valid value. Furthermore, such a tool should also systematically update other occurrences of that variable throughout the program to account for the change and ensure program correctness. 
 
 \subsubsection{Types}
 
@@ -331,11 +334,11 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This concept might be referred to as interfaces in other languages, although there might be small differences. This change pattern relates to modifications in trait bounds. This can happen as part of bug fixes or for refactoring. \\
+\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This concept more-or-less corresponds to interfaces in other languages, although the mapping is not exact (e.g. it is possible to implement traits for types that one did not initially define). This change pattern relates to modifications in trait bounds, which can happen as part of bug fixes or for refactoring. \\
 
 \subsubsection{Match}
 
-In Rust, match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches with our value. A pattern and its associated code are called a match arm. Match statements can be similar to switch statements in other languages, like C, although match statements in Rust are able to match more complicated patterns.\\
+In Rust, the match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches with our value. A pattern and its associated code are called a match arm. Match statements can be similar to switch statements in other languages, like C, although match statements in Rust are able to match more complicated patterns.\\
 
 \noindent\textit{\textbf{G.match.pattern} Change in a match arm's pattern}
 
@@ -363,7 +366,7 @@ Operation::Insert(insert) => {
 
 \textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
 
-We collected 27143 datapoints for borrow-checker related fix patterns. We used $\epsilon=0.001$ and $Z=5$ as our DBSCAN parameters and that resulted in 102 clusters. After manual analysis, as described in~\ref{sec:manual_analysis_cluster_selection}, we ended up with 8 borrow-checker related fix patterns. Similar to the previous table, we describe BC-related patterns in Table~\ref{table:bc}. It is important to note that due to the unique nature of the Borrow-Checker as an exclusive component of Rust, these patterns may not have direct counterparts or equivalents in other languages. Now we provide a detailed description of each of these patterns:
+We collected 27143 datapoints for borrow-checker related fix patterns. We applied DBSCAN with parameters $\epsilon=0.001$ and $Z=5$, resulting in 102 clusters. After manual analysis (Section~\ref{sec:manual_analysis_cluster_selection}), we ended up with 8 borrow-checker related fix patterns. Similar to the previous table, we describe BC-related patterns in Table~\ref{table:bc}. Since the Borrow-Checker is unique to Rust, patterns in this section generally do not have direct counterparts in other languages. We next provide a detailed description of each of these patterns.
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
@@ -398,7 +401,7 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy conservatively estimates redundancy. By definition, removing a clone that is indeed redundant does not modify functional aspects of the program behaviour. (Removing a non-redundant clone introduces a compile error or, worse yet, a bug.) However, such a removal can greatly improve performance, if the program was formerly cloning large objects. \\
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy conservatively estimates redundancy. By definition, removing a clone that is indeed redundant does not modify functional aspects of the program behaviour. (Removing a non-redundant clone introduces a compile error or, worse yet, a bug.) However, such a removal can greatly improve the nonfunctional property of performance, if the program was formerly cloning large objects. \\
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
@@ -411,7 +414,7 @@ start_plugin_process(
 
 Like the previous pattern, this change does not affect the program behaviour; it is done for performance purposes. In one of the commits\footnote{\scriptsize \url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, changing a clone to borrowing significantly improved CPU usage. In the commit history, developers discussed how the cloning of types such as HashMap was expensive. \\
 
-\noindent\textbf{Actionability:} A program repair tool can implement clone removal by examining the necessity of the clone operation and considering the user's specifications regarding variable cloning. If the clone is unnecessary, the tool can replace it with a reference to reduce the overhead of unnecessary copying, as discussed in the example above. \\
+\noindent\textbf{Actionability:} Like Clippy, a program repair tool can implement clone removal by reasoning about whether the clone operation was necessary. If the clone is unnecessary, the tool can replace it with a reference (as seen above), thus reducing the overhead of unnecessary copying. \\
 
 \subsubsection{Ref and Deref}
 
@@ -425,9 +428,9 @@ let repo = replace(&mut *contents, Processing).inner_repo();
 
 \noindent\textbf{Description:} This change pattern happens when the developer now needs to take back ownership of an object that was previously passed to a callee (or other scope) and never returned. Borrowing allows the first scope to once again act on the object.
 
-To give an example, the commit in starship/starship excerpted above\footnote{\scriptsize \url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}} shows that the developer now borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. This object can then be used in a subsequent function invocation (\verb+remove_dir_all(repo_dir)+), which fixes a bug. \\
+As an example, the commit in starship/starship excerpted above\footnote{\scriptsize \url{https://github.com/starship/starship/commit/56d475578ea508631275772127f49a6949fea6b0}} shows that the developer now borrows the value of \verb+repo_dir+ to keep the ownership of the object in the current scope. This object can then be used in a subsequent function invocation (\verb+remove_dir_all(repo_dir)+), which fixes a bug. \\
 
-\noindent\textbf{Actionability:} This pattern often occurs as part of a larger change, making it challenging to create a generalized repair tool that covers all possible scenarios. Typically, when a reference is passed instead of transferring ownership, there is subsequent usage of the variable after the function call. Although creating a comprehensive repair tool for such cases is complex, empirical results underscore the significance and prevalence of this fix, warranting further investigation. \\
+\noindent\textbf{Actionability:} This pattern often occurs as part of a larger change, making it challenging to create a generalized repair tool that covers all possible scenarios. Typically, when a reference is passed instead of transferring ownership, the variable is used again after returning from the call. Although creating a comprehensive repair tool for such cases is complex, empirical results underscore the significance and prevalence of this fix, warranting further investigation. \\
 
 \noindent\textit{\textbf{BC.deref.to\_string().add} Adding a dereference operation before calling to\_string()}
 
@@ -456,9 +459,9 @@ parser::Parser::new(args)
         })?
 \end{lstlisting}
 
-\noindent\textbf{Description:} This change happens when the developer needs to mutate a variable which was previously immutable in a scope---they thus need to add the \verb+mut+ keyword. We never observed this pattern in refactoring changes; it always accompanied a change in program behaviour. \\
+\noindent\textbf{Description:} This change happens when the developer needs to mutate a variable which was previously immutable in a scope---they thus need to add the \verb+mut+ keyword. We never observed this pattern in refactoring-only changes; it always accompanied a change in program behaviour. \\
 
-\noindent\textbf{Actionability:} A repair tool can utilize this pattern to meet the user's specifications by introducing mutability to the target variable and modifying other parts of the program accordingly. For instance, if the target variable has associated \texttt{impl} blocks, the change may involve modifying method annotations to ensure that the calling object is mutable, aligning with the desired specifications. \\
+\noindent\textbf{Actionability:} A repair tool can use this pattern to introduce mutability to the target variable and modify other parts of the program accordingly. For instance, if the target variable has associated \texttt{impl} blocks, the change may involve modifying method annotations to ensure that the calling object is mutable, aligning with the desired specifications.\todo{how would the specs be provided? how could this be done as part of repair vs as part of refactoring?!} \\
 
 
 \noindent\textit{\textbf{BC.mut.drop} Dropping mutability}
