@@ -2,6 +2,8 @@ Automated program repair aims to debug faulty source code without human involvem
 
 Researchers have proposed different methods for code repair, each of which can be said to follow a different mindset. Following the taxonomy propsed by \cite{liu2018survey}, we briefly present two mindsets, and will discuss how having a set of predefined fix patterns can aid repair.
 
+\todo{state of the art in refactoring tools for rust}
+
 \subsection{Search-Based Program Repair}
 One line of research in program repair follows the competent programmer hypothesis~\citep{gopinath2014mutant}: syntactically, a faulty program is not that far away from its correct version. This hypothesis suggests the search-based program repair mindset. If the hypothesis holds, we can develop mutation operators (which change an expression or a statement) and apply them to a list of fault locations provided by the fault localization module. So, we loop through possible mutations; if the mutation of a statement does not cause all expected-successful test cases to succeed, we assume that the statement is correct and move on to the next fault location. Having a set of bug-producing patterns, like the ones we are proposing, will help researchers design targetted mutation operators that leverage domain specific insights.
 
