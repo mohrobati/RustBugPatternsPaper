@@ -108,7 +108,7 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
     
 
 \subsubsection{Attributes}
-
+\todo{if you hand-trim the instances in the attributes and struct pattern, you also have to hand-trim the other categories}
 The most common bug fix pattern in our corpus modifies attributes. In Rust, attributes enable developers to add metadata to program elements. Some of the attributes---presumably all of the ones involved in bug fixes---affect the semantics of the program; for instance, libraries can generate different code based on the attributes that the developer specifies.
 
 Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes\todo{how important is inner versus outer?}: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
