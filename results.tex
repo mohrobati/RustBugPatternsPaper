@@ -90,8 +90,8 @@ Since these patterns are general Rust patterns, analogous patterns can also occu
 \begin{tabular}{l|l|r|r}
 \textbf{Catgegory} & \textbf{ID} & \textbf{\# Instances} & \textbf{\# Projects} \\
 \hline
-\multirow{2}{*}{Attributes} & G.attr.struct & 172 & 16                                  \\
-& G.attr.struct.field & 62 & 16                     \\\cline{1-4}
+\multirow{2}{*}{Attributes} & G.attr.struct & 81 & 16                                  \\
+& G.attr.struct.field & 34 & 9                     \\\cline{1-4}
 \multirow{2}{*}{Struct} & G.struct.field  & 179 & 17\\
 & G.struct.field.pub & 23 & 12   
 \\\cline{1-4}
@@ -108,12 +108,11 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
     
 
 \subsubsection{Attributes}
-\todo{if you hand-trim the instances in the attributes and struct pattern, you also have to hand-trim the other categories}
 The most common bug fix pattern in our corpus modifies attributes. In Rust, attributes enable developers to add metadata to program elements. Some of the attributes---presumably all of the ones involved in bug fixes---affect the semantics of the program; for instance, libraries can generate different code based on the attributes that the developer specifies.
 
 Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc. There are two types of attributes\todo{how important is inner versus outer?}: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
 
-The concept of attributes in Rust is similar to Python's decorators\todo{are python decorator changes important in the Python dataset?} and Java's annotations (though Java annotations may be less likely to have runtime effect; for instance, Java @Override adds additional compile-time constraints). While each language may have its own syntax and specific use cases, the fundamental idea of attaching additional information to code elements is shared across these languages. \\
+The concept of attributes in Rust is similar to Python's decorators and Java's annotations (though Java annotations may be less likely to have runtime effect; for instance, Java @Override adds additional compile-time constraints). While each language may have its own syntax and specific use cases, the fundamental idea of attaching additional information to code elements is shared across these languages. We describe bug patterns that involve modification in Attributes. In the case of Python, according to the findings of \cite{yang2022mining}, no bug patterns involving Python's decorators were reported in their study. \\
 
 \noindent\textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
@@ -125,12 +124,10 @@ pub struct CounterProps {
     pub destroy_callback: Callback<()>,
 }
 
-//G.attr.struct.drop: Removing attributes from a struct
+// G.attr.struct.drop: Removing attributes from a struct
 <@\textcolor{red}{--}@> #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 <@\textcolor{green}{++}@> #[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Subset {
-    /// Invariant, maintained by `SubsetBuilder`: all `Segment`s have non-zero
-    /// length, and no `Segment` has the same count as the one before it.
     segments: Vec<Segment>,
 }
 
@@ -149,9 +146,7 @@ pub enum SearchAction {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the developer changes the attribute set of a struct. There are three variants of this pattern: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern.
-
-\todo{discussion on how many of the changes are of each variant: over 90\% are modify, but get the actual number}
+\noindent\textbf{Description:} In this pattern, the developer changes the attribute set of a struct. There are three variants of this pattern: Adding attributes to the struct (G.attr.struct.add); Removing attributes from the struct (G.attr.struct.drop); Changing the content of an existing attribute (G.attr.struct.change). These variants account for 58, 10, and 13 out of 81 datapoints in the cluster, respectively. Thus, adding attributes is the most frequent variant. Alse, these attributes are Outer Attributes as we can find struct-related non terminals within the ASTDiff of the instances of this pattern.
 
 In the specific cases above, the Add change requests that additional boilerplate code be generated to evaluate partial equivalence on \texttt{CounterProps} (new functionality); the Remove change causes debug code to be removed (performance fix); and the Change change requests different deserialization code be generated. \\
 
@@ -183,12 +178,9 @@ pub struct Retain {
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field. \\
+\noindent\textbf{Description:} In this pattern, the attribute set of a struct field changes. As with \textit{\textbf{G.attr.struct}}, there are also three subtypes of this change pattern. Out of 34 datapoints in this cluster, 32 involve changes to a field attribute, while one datapoint each corresponds to the addition and removal of a field attribute. Using these attributes, the developers can control different actions they wish to apply on struct fields, in addition to providing meta-information. For instance, in the code snippet provided above, the developers chose to make Serde (a serialization/deserialization tool for Rust) call a different function (\verb+is_empty+ instead of \verb+Option::is_none+) to determine whether to skip serializing the \verb+attributes+ field. Note that \textit{\textbf{G.attr.struct.field}} is not a subset of \textit{\textbf{G.attr.struct}}. \\
 
-\todo{please confirm: G.attr.struct.field is not a subset of G.attr.struct.}
-\todo{we should also get the count of subtypes}
-
-\noindent\textbf{Actionability:} Because attributes have semantic effects, program repair tools can effect repairs by adjusting the set of attributes included. Starting from the observation that so many of our bug fixes change attributes, we believe that IDEs need to be able to propose relevant attribute changes, as witnessed in our corpus. The example in the text about changing Deserialize to ConfigDeserialize is specific to that program, but other changes would apply more generally. \todo{which?} Also, we demonstrated a case where the developer removed a \texttt{Debug} attribute. A novel type of performance program repair tool working with a run-time profiler could identify unnecessary code and remove attributes that generate it. 
+\noindent\textbf{Actionability:} Because attributes have semantic effects, program repair tools can effect repairs by adjusting the set of attributes included. Starting from the observation that so many of our bug fixes change attributes, we believe that IDEs need to be able to propose relevant attribute changes, as witnessed in our corpus. The example for \textit{\textbf{G.attr.struct.change}} about changing \verb+Deserialize+ to \verb+ConfigDeserialize+ is specific to that program, but other changes would apply more generally. Also, as for \textit{\textbf{G.attr.struct.drop}}, we demonstrated a case where the developer removed a \verb+Debug+ attribute. A novel type of performance program repair tool working with a run-time profiler could identify unnecessary code and remove attributes that generate it. 
 
 \subsubsection{Struct} 
 
