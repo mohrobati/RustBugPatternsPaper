@@ -1,4 +1,5 @@
-In this section, we describe our methodology, providing full details in later subsections. Ruxanne uses a pipeline for finding classes of pervasive patterns in Rust programs. This pipeline parses program versions, computes differences between them, embeds them in fixed-size datapoints, and then clusters these datapoints. After conducting a manual analysis on the obtained clusters, we refine them to obtain our proposed bug fix patterns.
+In this section, we provide an overview of our methodology, providing full details in later subsections. Ruxanne uses a pipeline for finding classes of pervasive patterns in Rust programs. This pipeline parses program versions, computes differences between them, embeds them in fixed-size datapoints, and then clusters these datapoints. After conducting a manual analysis on the obtained clusters, we refine them to obtain our proposed bug fix patterns.
+\todo{where is the manual dropping of datapoints/manual analysis of clusters?}
 
 We define a code change to be a modification to a program's source code that changes the program's abstract syntax tree (AST). A change pattern is a set of code changes that serves a specific purpose. Purposes include rectifying program behaviour with respect to a specific functional or non-functional requirement (bug-fixing patterns) as well as improving code readability or maintainability (refactoring patterns). In this work, we are interested in bug-fixing patterns. Thus, from now on, whenever we refer to code patterns, we mean bug-fixing patterns.
 
@@ -385,6 +386,7 @@ Since both large and small values of $\epsilon$ would steer us away from obtaini
 
 \subsubsection{\label{sec:manual_analysis_cluster_selection}Manual Analysis for cluster selection}
 % 3 types, refactoring dropped
+\todo{is manual trimming here? not obvious to me}
 
 Like \cite{yang2022mining}, and following the definitions of \cite{cotroneo2019analyzing}, we divide the clusters in three different groups:
 
