@@ -25,12 +25,11 @@ The tenth-most-popular pattern, making a struct field \texttt{pub} and hence vis
 
 Conversely, we were surprised to find that Ruxanne reported no patterns associated with certain Rust-related features. For instance, we did not observe any patterns associated with the Rust \verb+move+ operator, which has been known to plague many beginning Rust programmers. \verb+move+ is used to transfer the ownership of values to a closure. In some cases (e.g. multithreading), not moving the ownership could create invalid references. Rust compiler checks prevent such errors. Our speculation is that, since Rust enforces strict compiler checks, programmers usually get many compile-time errors, but they only push their code once it is free of compile errors. We thus would not observe patterns which do not make it to the repository.
 
-\todo{recap the italicized stuff from above}
 \vspace*{1em}
 \fbox{\parbox{0.9\textwidth}{We summarize learnings from our bug patterns as follows:
 \begin{itemize}
-\item Being performance-awareness would be advantageous for program repair tools.
-\item Understanding the effects of attributes can guide program repair.
+\item Rust program repair tools must understand the effects of attributes.
+\item Program repair tools should be performance-aware.
 \item Tools for inferring Rust immutability could be viable.
 \end{itemize}
 }}
