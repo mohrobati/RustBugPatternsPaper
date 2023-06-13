@@ -436,7 +436,7 @@ for p in wixobjs {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} This is a change that in all instances (in our benchmarks) has been proposed by Clippy---commit messages indicated the use of Clippy for this fix. The change applies on an object prior to calling \verb+to_string()+ on that object. In this change, a dereference operator is added to that object. The reason behind the change is that the object is a reference type of \verb+T+, while \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods\footnote{\url{https://rust-lang.github.io/rust-clippy/master/index.html\#inefficient\_to\_string}}. This change is aimed at improving performance, as the functionality remains unchanged.
+\noindent\textbf{Description:} This is a change that in all instances (in our benchmarks) has been proposed by Clippy---commit messages indicated the use of Clippy for this fix. The change applies on an object prior to calling \verb+to_string()+ on that object. In this change, a dereference operator is added to that object. The reason behind the change is that the object is a reference type of \verb+T+, where \verb+T+ directly implements \verb+to_string()+. Adding the dereference makes the compiler instead use the specialized implementation of \verb+to_string()+ and not go through slower string formatting methods\footnote{\url{https://rust-lang.github.io/rust-clippy/master/index.html\#inefficient\_to\_string}}. This change is aimed at improving performance; the functionality remains unchanged.
 
 
 \subsubsection{Mut}
