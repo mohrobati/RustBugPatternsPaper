@@ -74,7 +74,7 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
 
 \end{figure}
 
-Figure~\ref{fig:rq1} shows the final results. Although we found that our results were acceptable---the result reported by our embedding was top-4 as ranked by humans 88\% of the time---we investigated the other 12\% as well. We found that our embedding tended to fail in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). Such failing change patterns tend to apply across projects less often, as having many changed elements make it easier for datapoints to be dissimlar.
+Figure~\ref{fig:rq1} shows the final results. Although we found that our results were acceptable---the result reported by our embedding was top-4 as ranked by humans 88\% of the time---we investigated the other 12\% as well. We found that our embedding tended to fail in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). Such failing change patterns tend to apply across projects less often, as having many changed elements make it easier for datapoints to be dissimilar.
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
@@ -108,12 +108,12 @@ Option & G.option & 22 & 12                    \\\cline{1-4}
     
 
 \subsubsection{Attributes}
-The most common bug fix pattern in our corpus modifies attributes. In Rust, attributes enable developers to add metadata to program elements. Some of the attributes---presumably the vast majority of those involved in bug fixes---affect the semantics of the program; for instance, libraries generate different code based on the attributes that the developer specifies.
+A quite common bug fix pattern in our corpus modifies attributes. In Rust, attributes enable developers to add metadata to program elements. Some of the attributes---presumably the vast majority of those involved in bug fixes---affect the semantics of the program; for instance, libraries generate different code based on the attributes that the developer specifies.
 
 Developers can add attributes to structs, struct fields, enum variants, match expression arms, etc.
 %I don't think we're well served to talk about inner vs outer attributes, not relevant to readers
 %There are two types of attributes\todo{how important is inner versus outer?}: Inner Attributes and Outer Attributes. Inner Attributes apply to the program element encapsulating them, while Outer Attributes apply to the program element coming after the attribute.
-The concept of attributes in Rust is similar to Python's decorators and Java's annotations. While each language may have its own syntax and specific use cases, the fundamental idea of attaching metadata to code elements is shared across these languages. Some attributes, decorators, and annotations have no run-time effect and thus could not cause bugs (if we accept a purely operational definition of ``bug''). \cite{yang2022mining}~reported no bug patterns involving Python's decorators in their Python dataset. As we alluded to above, however, Rust has many attributes that definitely have run-time effects. We will see some of these attributes in the following examples. 
+The concept of attributes in Rust is similar to Python's decorators and Java's annotations. While each language may have its own syntax and specific use cases, the fundamental idea of attaching metadata to code elements is shared across these languages. Some attributes, decorators, and annotations have no run-time effect and thus could not cause bugs (if we accept a purely operational definition of ``bug''). \cite{yang2022mining}~reported no bug patterns involving Python's decorators in their Python dataset. As we alluded to above, however, Rust has many attributes that definitely have run-time effects. We will see some of these attributes in the following examples. \\
 
 \noindent\textit{\label{sec:G.attr.struct}\textbf{G.attr.struct} Modifying the attributes of structs}
 
