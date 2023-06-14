@@ -186,7 +186,7 @@ A reasonable work around would be to pass from the full set of non terminals to 
 
 We propose a novel representation. Similar to the naive approach, we define the columns of our dataset as the set of items $\mathtt{NT} \cup \mathtt{BCE}$ collected from Syn. However, to account for order-sensitivity, we introduce two additional steps. Firstly, we record the number of occurrences of items from $\mathtt{NT} \cup \mathtt{BCE}$ within each distinct root-level scope (e.g. structs, functions, impl blocks, etc). This captures the varying occurrence counts resulting from different element orders in the program. Secondly, we incorporate a weighting scheme, designed semi-automatically, to prioritize non-terminals that we consider more salient for Rust bugs.
 
-\paragraph{Example: computing fixed-sized vectors.} Figure~\ref{fig:essence} depicts the fixed-sized vectors, as described in this subsection, for the change from Figure~\ref{fig:extraction}. We have omitted scope information from this Figure for space reasons; the relevant scope is \verb+ItemFn+, indicating that these non-terminals occur within a function. It also depicts the essence of change, to be described immediately below.
+\paragraph{Example: computing fixed-sized vectors.} Figure~\ref{fig:essence} depicts the fixed-sized vectors, as described in this subsection, for the change from Figure~\ref{fig:extraction}. All of the columns in this vector belong to scope \verb+ItemFn+---that is, these non-terminals occur within a function. The Figure also depicts the essence of change, to be described immediately below.
 
 \subsubsection{\label{sec:weighting_scheme}Weighting Scheme}
 
@@ -290,7 +290,7 @@ We propose a novel representation. Similar to the naive approach, we define the 
         \end{tikzpicture}
         
 
-    \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights results in the essence of change, visualized with a circle pack figure at bottom right. Scope information (ItemFn) omitted from column headings for space purposes.}
+    \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights results in the essence of change, visualized with a circle pack figure at bottom right. All non terminals here occur within scope {\texttt ItemFn}.}
 \end{figure}
 
 Our main requirement is that our datapoints summarize the key changes in ASTDiffs---a datapoint should foreground the most important change in a diff. For instance, the purple (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description, in our opinion, is the most useful one, and we designed our weighting scheme to embed this value judgment.
