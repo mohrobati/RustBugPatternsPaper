@@ -1,0 +1,32 @@
+Dear Prof. Feldt,
+
+Thank you for the opportunity to resubmit a revision of our paper ``A
+Study of Common Bug Fix Patterns in Rust'' to EMSE. We also thank the
+reviewers for their thoughtful reviews. We are submitting a revised
+paper (and diffs), along with our responses to the reviews. We briefly
+summarize our responses here.
+
+* Discussion: We wholeheartedly agree that it is important to show
+  that the patterns that we identified are valuable. We have added an
+  all-new Section 4.1, “Patterns Present and Missing” (specifically
+  discussing the value of the top 10 patterns and summarizing our
+  learnings) and mostly-new content in Section 4.2 “Usefulness of Rust
+  Bug Patterns” (discussing the general usefulness of patterns), as
+  well as paragraphs on actionability to 6 of the groups of patterns.
+
+* Methodology & Experiments: We appreciate reviewer comments on this
+  topic and have sought to engage with these comments. We believe that
+  the choices we made initially were appropriate and either comparable
+  or better than past related work; and that the experiments that the
+  reviewers suggested would be infeasible (due to computational
+  complexity or dataset availability), or not provide additional
+  insight into the problem.
+
+* Clarity: We have incorporated almost all of the reviewer
+  suggestions, and believe that they have improved the paper. Thanks!
+
+We look forward to the reviewers' opinions on this revision of our paper.
+
+Thank you,
+
+Mohammad Robati Shirzad & Patrick Lam
