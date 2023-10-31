@@ -11,11 +11,11 @@ rm *.log ;
 rm *.out ;
 rm *.synctex.gz ;
 pdflatex main.tex
-pdflatex cover.tex
+pdflatex response.tex
 bibtex main
 bibtex cover
 pdflatex main.tex
-pdflatex cover.tex
+pdflatex response.tex
 sleep 2;
 pdflatex main.tex
-pdflatex cover.tex
+pdflatex response.tex

@@ -81,7 +81,7 @@ We parse two versions of a changed Rust file in a commit: the file before the co
     
     \draw [->, green] plot [smooth, tension=1] coordinates { (2.5,1) (3,-3) (5,-5) (4,-6.5) (3.7,-8.5)};
     
-    \draw [->, purple] plot [smooth, tension=1] coordinates { (3,1) (3.5,-3) (5.5,-5) (5.5,-8.5)};
+    \draw [->, cyan] plot [smooth, tension=1] coordinates { (3,1) (3.5,-3) (5.5,-5) (5.5,-8.5)};
     
     %% Arrow
     
@@ -126,13 +126,13 @@ We parse two versions of a changed Rust file in a commit: the file before the co
     \node[draw=none, color=green] at (10.5,-8.3) {Path 2};
     \node[draw=none, color=green] at (10.5,-8.3) {Path 2};
     
-    \draw (13.5,-2.5) node[fill=purple!20](g1){ItemFn};
-    \draw (13.5,-3.5) node[fill=purple!20](g2){Local};
-    \draw (13.5,-4.5) node[fill=purple!20](g3){ExprCall};
-    \draw (13.5,-5.5) node[fill=purple!20](g4){ExprMethodCall};
-    \draw (13.5,-6.5) node[fill=purple!20](g5){Ident};
-    \draw (13.5,-7.5) node[fill=purple!20](g6){clone};
-    \node[draw=none, color=purple] at (13.5,-8.3) {Path 3};
+    \draw (13.5,-2.5) node[fill=cyan!20](g1){ItemFn};
+    \draw (13.5,-3.5) node[fill=cyan!20](g2){Local};
+    \draw (13.5,-4.5) node[fill=cyan!20](g3){ExprCall};
+    \draw (13.5,-5.5) node[fill=cyan!20](g4){ExprMethodCall};
+    \draw (13.5,-6.5) node[fill=cyan!20](g5){Ident};
+    \draw (13.5,-7.5) node[fill=cyan!20](g6){clone};
+    \node[draw=none, color=cyan] at (13.5,-8.3) {Path 3};
     
     \draw[->]  (e1) -- (e2);
     \draw[->]  (e2) -- (e3);
@@ -172,7 +172,7 @@ The second part identifies the context of the modification, that is, the path fr
 
 Looking at the tree encoded in the content part of each diff, we realized that each path to a leaf represents one element contributing to the change. A Depth First Search allows us to collect all paths, and we return only the paths that we store in our datapoints (i.e. touching $\mathtt{NT} \cup \mathtt{BCE}$).
 
-\paragraph{Running example: path extraction.} Figure~\ref{fig:extraction} illustrates path extraction on a simple change, starting from the ASTDiff. The change (shown in the top right corner of the Figure) replaces \verb+tail+ with \verb+&tail+ and \verb+head+ with \verb+head.clone()+. After the change, the second argument passes a borrow of \verb+tail+ rather than sending the ownership of \verb+tail+ to the callee; and, the third argument sends a clone of \verb+head+ to the callee instead of sending \verb+head+ itself. A DFS on this tree yields three different paths, which we show in red, green, and purple. A path represents a sequence of involved non~terminals. It is crucial to record the order of nodes in the path, so that we can record that order in our datapoint embedding.
+\paragraph{Running example: path extraction.} Figure~\ref{fig:extraction} illustrates path extraction on a simple change, starting from the ASTDiff. The change (shown in the top right corner of the Figure) replaces \verb+tail+ with \verb+&tail+ and \verb+head+ with \verb+head.clone()+. After the change, the second argument passes a borrow of \verb+tail+ rather than sending the ownership of \verb+tail+ to the callee; and, the third argument sends a clone of \verb+head+ to the callee instead of sending \verb+head+ itself. A DFS on this tree yields three different paths, which we show in red, green, and blue. A path represents a sequence of involved non~terminals. It is crucial to record the order of nodes in the path, so that we can record that order in our datapoint embedding.
 
 Note that the tree depicted in Figure~\ref{fig:extraction} is not an AST; rather, it represents an ASTDiff. The paths in the ASTDiff capture the changes in the code structure between the two versions, allowing us to analyze and extract relevant information for further processing. The number of paths in the ASTDiff does not directly correspond to the number of changed elements in the source code. Instead, it is determined by the structural differences between the two ASTs of the code versions.
 
@@ -182,7 +182,7 @@ In our example, we add a \verb+&+ borrow operator to the variable \verb+tail+, w
 
 The most naive approach would be to only report the observed non~terminals within the diff. That yields a fully order-insensitive representation. In such an embedding, for instance, there is no difference between two nested if statements and two if statements beside each other. On the other hand, theoretically, for full order-sensitiveness, we would need to embed all possible combinations of items from $\mathtt{NT} \cup \mathtt{BCE}$ as our dimensions, which yields a combinatorial explosion; this could potentially be reduced somewhat, but is still impractical. While we can implement a specific workaround to distinguish nested ifs (and we have done so), the general point about the large dimensionality of fully order-sensitive embedding still holds.
 
-A reasonable work around would be to pass from the full set of non~terminals to a smaller set of categories (e.g. a category for larger entities like class or function definitions, and a category for smaller entities like statements and expressions), and then to record all possible combinations of these categories (similar to \cite{hanam2016discovering}). That ad-hoc approach reduces the number of dimensions and provides more reasonable and syntactically-correct combinations. However, it would still yield a sparse dataset. 
+A reasonable workaround would be to pass from the full set of non~terminals to a smaller set of categories (e.g. a category for larger entities like class or function definitions, and a category for smaller entities like statements and expressions), and then to record all possible combinations of these categories (similar to \cite{hanam2016discovering}). That ad-hoc approach reduces the number of dimensions and provides more reasonable and syntactically-correct combinations. However, it would still yield a sparse dataset. 
 
 We propose a novel representation. Similar to the naive approach, we define the columns of our dataset as the set of items $\mathtt{NT} \cup \mathtt{BCE}$ collected from Syn. However, to account for order-sensitivity, we introduce two additional steps. Firstly, we record the number of occurrences of items from $\mathtt{NT} \cup \mathtt{BCE}$ within each distinct root-level scope (e.g. structs, functions, impl blocks, etc). This captures the varying occurrence counts resulting from different element orders in the program. Secondly, we incorporate a weighting scheme, designed semi-automatically, to prioritize non~terminals that we consider more salient for Rust bugs.
 
@@ -293,7 +293,7 @@ We propose a novel representation. Similar to the naive approach, we define the 
     \caption{\label{fig:essence}Multiplying the number of occurrences of items observed in the tree by their respective weights results in the essence of change, visualized with a circle pack figure at bottom right. All non~terminals here occur within scope {\texttt ItemFn}.}
 \end{figure}
 
-Our main requirement is that our datapoints summarize the key changes in ASTDiffs---a datapoint should foreground the most important change in a diff. For instance, the purple (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description, in our opinion, is the most useful one, and we designed our weighting scheme to embed this value judgment.
+Our main requirement is that our datapoints summarize the key changes in ASTDiffs---a datapoint should foreground the most important change in a diff. For instance, the blue (right-most) path in Figure~\ref{fig:extraction} could be described as a change in a local variable declaration; a change in a function call; calling a method of one of the function arguments; or calling clone() on one of the function arguments. The last description, in our opinion, is the most useful one, and we designed our weighting scheme to embed this value judgment.
 We made two observations about changes. First, we saw that items (non~terminals or BC-related elements) that occur closer to AST leaves tend to be more semantically important. Second, and relatedly, items closer to the root tend to be repeated in all the paths within one ASTDiff (e.g. ItemFn, Local, ExprCall in Figure~\ref{fig:extraction}). We thus want to prioritize items that tend to occur closer to leaves and de-prioritize items that tend to occur closer to roots.
 
 To design our weighting scheme, we collected empirical data about locations of item occurrences in a corpus. Specifically, we mined 20 of the most recent bug related commits of the same projects described in Table~\ref{table:repos}, and ran them through our pipeline. We recorded the total number of occurrences of each item. Then, if $\# i$ is the number of occurrences of $i$, we gave $i$ a weight of $1/\# i$. Because items that occur closer to the root also occur more often, per our observation, this gives higher weights to items that occur infrequently, i.e. closer to the leaves. Items that occur often and have lower weights are, we believe, less important in describing a change.
