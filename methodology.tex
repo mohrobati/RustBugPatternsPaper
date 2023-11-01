@@ -394,11 +394,11 @@ Since both large and small values of $\epsilon$ would steer us away from obtaini
 Like \cite{yang2022mining}, and following the definitions of \cite{cotroneo2019analyzing}, we divide the clusters in three different groups:
 
 \begin{itemize}
-    \item bug-fix: ``The changed code actually fixes the behavior of software, which can represent fixes for a bug type''. We include here changes that improve program performance, as they fix the behaviour of the software.
+    \item bug-fix: The code change rectifies the undesired behavior in the software system, providing fixes for a specific bug type. We also include here changes that improve program performance, as they fix the behaviour of the software.
 
-    \item fix-induced: ``The changed code is a group of bug-fixing code changes but not representing an actual bug fix, e.g., adding new input parameters to a method, the method signature and method call must be changed correspondingly''.
+    \item fix-induced: The code change is a part of a bug-fixing code and does not constitute the whole bug fix. For instance, introducing additional input parameters to a method also requires adjustments in the corresponding method invocations and does not represent the complete bug fix on its own.
     
-    \item refactoring: ``the changed code does not modify the software behavior, e.g., for better readability or encapsulation''.
+    \item refactoring: The software behavior remains unchanged after the code change. These changes are made for imporving codebase's maintainability, better readability or encapsulation.
 \end{itemize}
 
 In this work, we were only interested in the first two groups and ignored clusters for refactoring changes. Also, we prefer reporting clusters that manifest more-specific patterns. An abstract pattern as opposed to a more-specific pattern can account for many changes in the programs. We use our judgment to prioritize patterns that we deem more specific. For instance, we deem the pattern `Changing a clone of a variable to a borrowing of it in a function argument' more specific than `Changing a statement in a function's body':
