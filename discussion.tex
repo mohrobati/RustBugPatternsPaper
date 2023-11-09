@@ -2,6 +2,8 @@ In this work, we used Ruxanne to successfully mine 20 cross-project bug fix patt
 
 In each group, we categorized the bug fix patterns based on their underlying program element. The patterns encompass a wide variety of program elements both in the general and BC-related groups. This supports a conclusion that our weighting scheme is not biased towards specific program elements. Also, our patterns are all cross-project fix patterns: each reported fix pattern has been seen at least in three different projects.
 
+While we introduce patterns that reflect changes at different locations in the code, such as \textit{BC.ref.add}, which by borrowing a variable instead of taking ownership enables users to use the variable in subsequent locations, we acknowledge that it is possible that a large patch may be harder to cluster, because it has to look like other patches. Additionally, we believe that any clustering-based approach is likely going to have large diffs be further apart for the same reason that ours does: there is just more going on. Nevertheless, there is nothing inherently penalizing a larger diff. Also, we point out that the related work by~\cite{pan2009toward} specifically excludes diffs with seven statements or more, while we allow them.
+
 All of our parsing, path extraction, weighting scheme, and clustering modules, along with our final results, can be found in our replication package, which we provide for verification, reusability and further extension. Weightings can be modified to make the embedding focus on a specific set of elements for building different code embeddings.
 
 \subsection{Patterns Present and Missing}
