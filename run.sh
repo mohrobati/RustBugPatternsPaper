@@ -13,7 +13,7 @@ rm *.synctex.gz ;
 pdflatex main.tex
 pdflatex response.tex
 bibtex main
-bibtex cover
+bibtex response
 pdflatex main.tex
 pdflatex response.tex
 sleep 2;
