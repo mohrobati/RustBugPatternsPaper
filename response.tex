@@ -34,7 +34,7 @@ We also added a paragraph on bug classification at the beginning of Section 5.1.
 
 \textit{\textbf{R1:} Additionally, I would appreciate it if the authors could discuss the potential impact of the evolving Rust specification. Given that Rust is a novel programming language, it is subject to rapid grammatical changes, which in turn could influence bug characteristics and symptoms.}
 
-\vspace*{1em} \noindent \textbf{Response:} Yes, the 2022 Rust roadmap\footnote{\url{https://blog.rust-lang.org/inside-rust/2022/04/04/lang-roadmap-2024.html}} includes future proposed changes to Rust. It is indeed a threat to external validity, and we have now discussed it in our threats to external validity (Section 4.3); it could be mitigated by refreshing the analysis results once new versions of Rust are broadly used by extant packages.
+\vspace*{1em} \noindent \textbf{Response:} Yes, the 2022 Rust roadmap\footnote{\url{https://blog.rust-lang.org/inside-rust/2022/04/04/lang-roadmap-2024.html}} includes future proposed changes to Rust. It is indeed a threat to external validity, and we have now discussed it in our threats to external validity (Section 4.3); this threat could be mitigated by refreshing the analysis results once new versions of Rust are broadly used by extant packages.
 
 \section{Reviewer 2}
 
@@ -44,7 +44,7 @@ We also added a paragraph on bug classification at the beginning of Section 5.1.
 
 \textit{\textbf{R2:} Inspired by the last paragraph of Section 4.1, can authors discuss which of the following is more important for Rust in the next paper version: fixing bugs and fixing compilation errors?}
 
-\vspace*{1em} \noindent \textbf{Response:} We added a new paragraph at the end of Section 4.1. We consider bugs as potentially more critical, because an unresolved bug can remain dormant within the system and unintentionally get deployed, whereas a program with compilation errors cannot be shipped by developers.
+\vspace*{1em} \noindent \textbf{Response:} We added a new paragraph at the end of Section 4.1: we consider bugs as potentially more critical. This is because a bug, if left unresolved, can remain dormant within the system and then inadvertently get deployed, whereas a program with compilation errors cannot be shipped by developers.
 
 \vspace*{1em} \noindent \textit{\textbf{R2:} Please discuss why identified patches are all small in the next paper version. Basically, please add the last paragraph of Section 2.2.4 of the rebuttal to the next paper version.}
 
@@ -58,17 +58,17 @@ We also added a paragraph on bug classification at the beginning of Section 5.1.
 
 \vspace*{1em} \noindent \textit{\textbf{R2: } I still do not understand Figure 1. I suggest the authors label ASTDiff nodes with code to ease the explanation.}
 
-\vspace*{1em} \noindent \textbf{Response:} We have added the labels {\tt \&tail} and {\tt head.clone()} at the relevant ASTDiff nodes on the tree on the left. The nonterminals themselves don't directly correspond to code---it would be the terminals which are not present in the paths. We have also added more text to the caption of Figure 1 and point at the ExprReference in Path 1 in the text.
+\vspace*{1em} \noindent \textbf{Response:} We have added the labels {\tt \&tail} and {\tt head.clone()} at the relevant ASTDiff nodes on the tree on the left. The nonterminals themselves don't directly correspond to code---it would be the terminals which are not present in the paths. We have also added more text to the caption of Figure 1 and point at the ExprReference in Path 1 in the text just below the Figure.
 
 \subsection{Minor issues}
 
-\textit{\textbf{R2:} Line 21 on page 8: work around -> workaround}
+\textit{\textbf{R2:} Line 21 on page 8: work around $\rightarrow$ workaround}
 
 \vspace*{1em} \noindent \textbf{Response:} Fixed.
 
 \vspace*{1em} \noindent \textit{\textbf{R2:} Line 49 on page 8: which path is colored in purple in figure 1?}
 
-\vspace*{1em} \noindent \textbf{Response:} It is the rightmost path. We changed the color to blue so it is clearer and added a reference to ``Path 3'' as in the Figure.
+\vspace*{1em} \noindent \textbf{Response:} It is the rightmost path. We changed the color to blue so it is clearer and added a reference to ``Path 3'' to the text, to match with the Figure.
 
 \small
 \bibliographystyle{plain}
