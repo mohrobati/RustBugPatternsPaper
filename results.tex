@@ -245,7 +245,7 @@ pub struct MediaRule {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain the equivalent of null, they would have to use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants: \texttt{Some}, which indicates that a variable has a value; and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field. 
+\noindent\textbf{Description:} Rust is a null-safe language, meaning that object references cannot take on null values. If a developer wants a variable to contain the equivalent of null, they must use the \texttt{Option} type. \texttt{Option} is essentially an \texttt{enum} with two variants: \texttt{Some}, which indicates that a variable has a value; and \texttt{None}, which indicates the absence of any value. In this change pattern, the developer changes the type of a struct field to an \texttt{Option} of that type, hence enabling them to store no value in that field. 
 For instance, in the Rust project swc-project/swc (a fast TypeScript/JavaScript compiler), the developer needed to modify the CSS parser source code to account for empty @media queries\footnote{\scriptsize \url{https://github.com/swc-project/swc/commit/75a14f98b7370226115ee24eec6eb8c802bd4837}}. As shown in the snippet above, they changed type \texttt{MediaQueryList} to \verb+Option<MediaQueryList>+, and modified the other parts of the source code accordingly. \\
 
 \noindent\textbf{Actionability of adding Option to a type:} This pattern occurs as a \textit{fix-induced} change---a repair tool might be carrying out a broader change and need to make smaller changes like this one in the process. Our empirical results suggest that this type of change does occur in practice and will need to be part of a program repair tool's arsenal.
@@ -332,7 +332,7 @@ pub struct CoreState {
 
 \subsubsection{Match}
 
-In Rust, the match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches with our value. A pattern and its associated code are called a match arm. Match statements can be similar to switch statements in other languages, like C, although match statements in Rust are able to match more complicated patterns.\\
+In Rust, the match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches. A pattern and its associated code are called a match arm. Match statements can be similar to switch statements in other languages, like C, although match statements in Rust are able to match more complicated patterns.\\
 
 \noindent\textit{\textbf{G.match.pattern} Change in a match arm's pattern}
 
@@ -343,7 +343,7 @@ In Rust, the match control flow construct is used for comparing a value against 
 }
 \end{lstlisting}
 
-\noindent\textbf{Description:} In this pattern, a change occurs in an arm's pattern. Like the code snippet provided above, it can be a change in a match pattern's type. It also can be matching to a different enum variant or string. The fix pattern can happen both for refactoring or debugging purposes. \\
+\noindent\textbf{Description:} In this pattern, a change occurs in an arm's pattern. Like the code snippet provided above, it can be a change in a match pattern's type. It also can be matching to a different enum variant or string. The fix pattern can happen both for refactoring or bug-fixing purposes. \\
 
 \noindent\textit{\textbf{G.match.code} Change in a match arm's code}
 
@@ -395,7 +395,7 @@ start_plugin_process(
 );
 \end{lstlisting}
 
-\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy conservatively estimates redundancy. By definition, removing a clone that is indeed redundant does not modify functional aspects of the program behaviour. (Removing a non-redundant clone introduces a compile error or, worse yet, a bug.) However, such a removal can greatly improve the nonfunctional property of performance, if the program was formerly cloning large objects. \\
+\noindent\textbf{Description:} This pattern is referred to as redundant clone in Clippy Lints. Clippy\footnote{\url{https://github.com/rust-lang/rust-clippy}} is a linter tool for Rust that catches common mistakes. There are more than 500 lints included in Clippy. Since detecting whether a clone is redundant is undecidable, Clippy conservatively estimates redundancy. By definition, removing a clone that is indeed redundant does not modify functional aspects of the program behaviour. (Removing a non-redundant clone introduces a compile error or, worse yet, a bug.) However, a removal of a redundant clone can greatly improve the nonfunctional property of performance, if the program was formerly cloning large objects. \\
 
 \noindent\textit{\textbf{BC.clone.ref} Dropping clone and adding borrowing}
 
@@ -406,7 +406,7 @@ start_plugin_process(
 
 \noindent\textbf{Description:} Unlike the previous pattern, this pattern is not detected by Clippy. The change happens when a developer realizes that the cloning of a variable is unnecessary, but also wants to keep the ownership of the variable within the current scope (rather than passing it to a callee). That is why, in this pattern, a clone is turned into a borrow. 
 
-Like the previous pattern, this change does not affect the program behaviour; it is done for performance purposes. In one of the commits\footnote{\scriptsize \url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, changing a clone to borrowing significantly improved CPU usage. In the commit history, developers discussed how the cloning of types such as HashMap was expensive. \\
+Like the previous pattern, this change does not affect the program behaviour; it is done for performance purposes. In one of the commits\footnote{\scriptsize \url{https://github.com/tauri-apps/tauri/commit/a280ee90af0749ce18d6d0b00939b06473717bc9}} of the project tauri-apps/tauri, changing a clone to borrowing significantly improved CPU usage: in the commit history, developers discussed how the cloning of types such as HashMap was expensive. \\
 
 \noindent\textbf{Actionability of clone removal:} Like Clippy, a program repair tool can implement clone removal by reasoning about whether the clone operation was necessary. If the clone is unnecessary, the tool can replace it with a reference (as seen above), thus reducing the overhead of unnecessary copying. \\
 
