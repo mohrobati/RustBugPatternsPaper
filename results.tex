@@ -74,12 +74,12 @@ We carried out a manual experiment for evaluating our code embedding. In the exp
 
 \end{figure}
 
-Figure~\ref{fig:rq1} shows the final results. Although we found that our results were acceptable---the result reported by our embedding was top-4 as ranked by humans 88\% of the time---we investigated the other 12\% as well. We found that our embedding tended to fail in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). Such failing change patterns tend to apply across projects less often, as having many changed elements make it easier for datapoints to be dissimilar.
+Figure~\ref{fig:rq1} shows the final results. Although we judged that our results were acceptable---the result reported by our embedding was top-4 as ranked by humans 88\% of the time---we investigated the other 12\% as well. We found that our embedding tended to fail in change patterns where the change involves many elements (e.g. adding a whole new \verb+impl+ block and implementing new functions in it). Such failing change patterns tend to apply across projects less often, as having many changed elements make it easier for datapoints to be dissimilar.
 
 \subsection{\label{sec:common_patterns}Common Bug Fix Patterns (RQ2)}
 
 \textbf{What are the general fix patterns in Rust, and how often do they apply?} 
-We collected general fixes, asked DBSCAN to create clusters, and manually analyzed them. In this subsection, we will discuss each pattern, as well as one aspect of its value---its actionability. By actionability, we mean the possible usages of the pattern for bug repair. Other researchers can also use the empirical pattern frequency numbers that we report to build their own program repair tools, prioritizing more-frequently-repaired patterns; they are not limited to our suggested actionability.  Section~\ref{subsec:patterns} contains a global discussion of our patterns and their value.
+We collected general fixes, asked DBSCAN to create clusters, and manually analyzed them. In this subsection, we will discuss each pattern, as well as an important aspect of its value: its actionability. By actionability, we mean the possible usages of the pattern for bug repair. Other researchers can also use the empirical pattern frequency numbers that we report to build their own program repair tools, prioritizing more-frequently-repaired patterns; they are not limited to our suggested actionability.  Section~\ref{subsec:patterns} contains a global discussion of our patterns and their value.
 
 Our dataset includes 60583 datapoints for general fix patterns. We processed our dataset on a server with a Xeon Gold 5120 processor (Q3-2017, 14-core 2.2 to 3.2GHz). The data collection took around 26 hours to populate the general and BC-related databases $D_g$ and $D_b$. We used DBSCAN with parameters $\epsilon=0.0001$ and $Z=5$, resulting in 577 clusters. After manual analysis, as described in Section~\ref{sec:manual_analysis_cluster_selection}, we ended up with 12 general patterns, which we describe in Table~\ref{table:general}. As shown in the table, we have separated the patterns based on the underlying program element (Category column). We have given each pattern a specific ID (ID column) and determined the number of instances manifesting that fix pattern (\# Instances column), as well as the number of projects in which the pattern was seen (\# Project column).
 
@@ -328,11 +328,11 @@ pub struct CoreState {
 
 \end{lstlisting}
 
-\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This concept more-or-less corresponds to interfaces in other languages, although the mapping is not exact (e.g. it is possible to implement traits for types that one did not initially define). This change pattern relates to modifications in trait bounds, which can happen as part of bug fixes or for refactoring. \\
+\noindent\textbf{Description:} The trait bounds are the functionalities that we require from our parametric types. This concept more-or-less corresponds to interfaces in other languages, although the mapping is not exact (e.g. it is possible to implement traits for others' types). This change pattern relates to modifications in trait bounds, which can happen as part of bug fixes or for refactoring. \\
 
 \subsubsection{Match}
 
-In Rust, the match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches. A pattern and its associated code are called a match arm. Match statements can be similar to switch statements in other languages, like C, although match statements in Rust are able to match more complicated patterns.\\
+In Rust, the match control flow construct is used for comparing a value against multiple patterns, and executing the code associated with the first pattern that matches. A pattern and its associated code are called a match arm. Match statements are similar to switch statements in other languages, like C, although Rust match statements are able to match more complicated patterns.\\
 
 \noindent\textit{\textbf{G.match.pattern} Change in a match arm's pattern}
 
@@ -360,7 +360,7 @@ Operation::Insert(insert) => {
 
 \textbf{What are borrow-checker related fix patterns in Rust, and how often do they apply?} 
 
-We collected 27143 datapoints for borrow-checker related fix patterns. We applied DBSCAN with parameters $\epsilon=0.001$ and $Z=5$, resulting in 102 clusters. After manual analysis (Section~\ref{sec:manual_analysis_cluster_selection}), we ended up with 8 borrow-checker related fix patterns. Table~\ref{table:bc} describes BC-related patterns, analogously to Table~\ref{table:general} for general patterns. Since the Borrow-Checker is unique to Rust, patterns in this section generally do not have direct counterparts in other languages. We next provide a detailed description of each of these patterns.
+We collected 27143 datapoints for borrow-checker related fix patterns. We then applied DBSCAN with parameters $\epsilon=0.001$ and $Z=5$, resulting in 102 clusters. After manual analysis (Section~\ref{sec:manual_analysis_cluster_selection}), we ended up with 8 borrow-checker related fix patterns. Table~\ref{table:bc} describes BC-related patterns, analogously to Table~\ref{table:general} for general patterns. Since the Borrow-Checker is unique to Rust, patterns in this section generally do not have direct counterparts in other languages. We next provide a detailed description of each of these patterns.
 
 \begin{table}[]
 \begin{tabular}{l|l|r|r}
@@ -466,7 +466,7 @@ parser::Parser::new(args)
 <@\textcolor{green}{++}@> let tx = tx.clone();
 \end{lstlisting}
 
-\noindent\textbf{Description:} The developer drops the mut keyword before a variable, as they do not mutate the variable. This redundant mutability is reported by Clippy and can also be removed by it. Such a change may help future-proof the code against unintended future changes.
+\noindent\textbf{Description:} The developer drops the mut keyword before a variable, as they do not mutate the variable (which is statically checkable). This redundant mutability is reported by Clippy and can also be removed by it. Such a change may help future-proof the code against unintended future changes: mutability must be explicitly added back before the variable can be mutated.
 
 \subsubsection{Vector}
 
@@ -480,7 +480,7 @@ pub fn expand_delimited_square(
     // body
 }
 \end{lstlisting}
-\noindent\textbf{Description:} In a struct field definition, or in the types of a function's formal parameters, type \verb+&Vec<T>+ changes to slice \verb+&[T]+. Clippy can detect the opportunity to apply this pattern. This simplifies the code; slice types \verb+&[T]+ or \verb+&str+ are sufficient for most use cases. 
+\noindent\textbf{Description:} In a struct field definition, or in the types of a function's formal parameters, type \verb+&Vec<T>+ changes to slice \verb+&[T]+. Clippy can detect opportunities to apply this pattern. This simplifies the code; slice types \verb+&[T]+ or \verb+&str+ are sufficient for most use cases. 
 
 \subsubsection{Lifetime}
 \noindent\textit{\textbf{BC.lifetime.static.drop} Dropping static lifetime}
